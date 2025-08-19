@@ -18,49 +18,236 @@ components:
     User:
       type: object
       properties:
-        id: { type: string }
-        email: { type: string }
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
         name: { type: string }
         phone: { type: string }
         role: { type: string, enum: [vendor, stepper, customer] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     Vendor:
       type: object
       properties:
-        id: { type: string }
-        shopName: { type: string }
-        logo: { type: string }
-        location: { type: object, properties: { lat: { type: number }, lng: { type: number } } }
-        hours: { type: object, properties: { open: { type: string }, close: { type: string } } }
+        id: { type: string, format: uuid }
+        shop_name: { type: string }
+        logo_url: { type: string }
+        location:
+          type: object
+          properties:
+            type: { type: string, enum: [Point] }
+            coordinates:
+              type: array
+              items: { type: number }
+              minItems: 2
+              maxItems: 2
+        hours:
+          type: object
+          properties:
+            open: { type: string }
+            close: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     Product:
       type: object
       properties:
-        id: { type: string }
+        id: { type: string, format: uuid }
+        vendor_id: { type: string, format: uuid }
         name: { type: string }
         price: { type: number }
         description: { type: string }
-        photo: { type: string }
+        photo_url: { type: string }
         available: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     Order:
       type: object
       properties:
-        id: { type: string }
-        customerId: { type: string }
-        vendorId: { type: string }
-        stepperId: { type: string }
-        items: { type: array, items: { $ref: '#/components/schemas/Product' } }
-        status: { type: string, enum: [placed, accepted, out_for_delivery, delivered] }
+        id: { type: string, format: uuid }
+        customer_id: { type: string, format: uuid }
+        vendor_id: { type: string, format: uuid }
+        stepper_id: { type: string, format: uuid, nullable: true }
+        status: { type: string, enum: [placed, accepted, preparing, ready, out_for_delivery, delivered, completed] }
         total: { type: number }
-    Rating:
-      type: object
-      properties:
-        rating: { type: number, minimum: 1, maximum: 5 }
-        feedback: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     Wallet:
       type: object
       properties:
+        id: { type: string, format: uuid }
+        stepper_id: { type: string, format: uuid }
         balance: { type: number }
-        commissionHistory: { type: array, items: { type: object } }
-        depositGrowth: { type: number }
+        deposit_amount: { type: number }
+        deposit_growth: { type: number }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CommissionHistory:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        stepper_id: { type: string, format: uuid }
+        order_id: { type: string, format: uuid }
+        amount: { type: number }
+        created_at: { type: string, format: date-time }
+    WithdrawalRequest:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        stepper_id: { type: string, format: uuid }
+        amount: { type: number }
+        status: { type: string, enum: [pending, approved, rejected] }
+        two_factor_code: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Notification:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        message: { type: string }
+        type: { type: string, enum: [order_update, rating, promotion] }
+        read: { type: boolean }
+        created_at: { type: string, format: date-time }
+    Customer:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        hall: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Stepper:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        student_id_url: { type: string }
+        verification_form_url: { type: string }
+        picture_url: { type: string }
+        rating: { type: number }
+        location:
+          type: object
+          nullable: true
+          properties:
+            type: { type: string, enum: [Point] }
+            coordinates:
+              type: array
+              items: { type: number }
+              minItems: 2
+              maxItems: 2
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    RatingCreateInput:
+      type: object
+      properties:
+        vendor_rating: { type: integer, minimum: 1, maximum: 5 }
+        stepper_rating: { type: integer, minimum: 1, maximum: 5 }
+        feedback: { type: string }
+    SignupInput:
+      type: object
+      required: [email, password, role, name]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        role: { type: string, enum: [vendor, stepper, customer] }
+        name: { type: string }
+        phone: { type: string }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+    OtpInput:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email }
+    VerifyOtpInput:
+      type: object
+      required: [email, otp]
+      properties:
+        email: { type: string, format: email }
+        otp: { type: string, minLength: 6, maxLength: 6 }
+    UpdateProfileInput:
+      type: object
+      properties:
+        name: { type: string }
+        phone: { type: string }
+        hall: { type: string }
+    VendorRegisterForm:
+      type: object
+      properties:
+        shop_name: { type: string }
+        logo: { type: string, format: binary }
+        location:
+          type: string
+          description: JSON string of { lat: number, lng: number }
+          example: '{"lat":5.560, "lng":-0.205}'
+        hours:
+          type: string
+          description: JSON string of { open: string, close: string }
+          example: '{"open":"09:00","close":"17:00"}'
+    StepperRegisterForm:
+      type: object
+      properties:
+        student_id: { type: string, format: binary }
+        verification_form: { type: string, format: binary }
+    StepperProfileUpdateForm:
+      type: object
+      properties:
+        picture: { type: string, format: binary }
+        phone: { type: string }
+    OrderStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [pending, preparing, ready, completed] }
+    StepperDepositInput:
+      type: object
+      required: [amount]
+      properties:
+        amount: { type: number, minimum: 0 }
+    WithdrawalInput:
+      type: object
+      required: [amount, two_factor_code]
+      properties:
+        amount: { type: number, minimum: 0 }
+        two_factor_code: { type: string }
+    CustomerRegisterInput:
+      type: object
+      required: [name, hall]
+      properties:
+        name: { type: string }
+        hall: { type: string }
+        phone: { type: string }
+    OrderCreateInput:
+      type: object
+      required: [items, payment_details]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [product_id, quantity]
+            properties:
+              product_id: { type: string, format: uuid }
+              quantity: { type: integer, minimum: 1 }
+        payment_details: { type: object, additionalProperties: true }
+    GeolocationUpdateInput:
+      type: object
+      required: [location]
+      properties:
+        location:
+          type: object
+          required: [lat, lng]
+          properties:
+            lat: { type: number }
+            lng: { type: number }
+    NotificationPushInput:
+      type: object
+      required: [user_id, message, type]
+      properties:
+        user_id: { type: string, format: uuid }
+        message: { type: string }
+        type: { type: string, enum: [order_update, rating, promotion] }
 paths:
   /auth/signup:
     post:
@@ -71,16 +258,19 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email: { type: string }
-                password: { type: string }
-                role: { type: string, enum: [vendor, stepper, customer] }
-                name: { type: string }
-                phone: { type: string }
+              $ref: '#/components/schemas/SignupInput'
       responses:
-        '200': { description: JWT token, content: { application/json: { schema: { type: object, properties: { token: { type: string } } } } } }
-        '400': { description: Validation error }
+        '200':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/User' }
+                  message: { type: string }
+        '400': { description: Validation or creation error }
   /auth/login:
     post:
       summary: Authenticate user and return JWT token
@@ -90,12 +280,18 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email: { type: string }
-                password: { type: string }
+              $ref: '#/components/schemas/LoginInput'
       responses:
-        '200': { description: JWT token, content: { application/json: { schema: { type: object, properties: { token: { type: string } } } } } }
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/User' }
+                  message: { type: string }
         '401': { description: Invalid credentials }
   /auth/otp:
     post:
@@ -106,12 +302,10 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email: { type: string }
+              $ref: '#/components/schemas/OtpInput'
       responses:
-        '200': { description: Success }
-        '400': { description: Invalid email }
+        '200': { description: OTP sent successfully }
+        '400': { description: Invalid email or failed to send }
   /auth/verify-otp:
     post:
       summary: Verify OTP for user authentication
@@ -121,22 +315,20 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email: { type: string }
-                otp: { type: string }
+              $ref: '#/components/schemas/VerifyOtpInput'
       responses:
-        '200': { description: JWT token, content: { application/json: { schema: { type: object, properties: { token: { type: string } } } } } }
+        '200':
+          description: OTP verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/User' }
+                  message: { type: string }
         '400': { description: Invalid OTP }
   /auth/profile:
-    get:
-      summary: Fetch authenticated user’s profile
-      tags: [Authentication]
-      security:
-        - BearerAuth: []
-      responses:
-        '200': { description: Profile data, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
-        '401': { description: Unauthorized }
     put:
       summary: Update user profile
       tags: [Authentication]
@@ -147,13 +339,9 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name: { type: string }
-                phone: { type: string }
-                hall: { type: string }
+              $ref: '#/components/schemas/UpdateProfileInput'
       responses:
-        '200': { description: Updated profile, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '200': { description: Profile updated successfully }
         '401': { description: Unauthorized }
   /auth/logout:
     post:
@@ -162,7 +350,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200': { description: Success }
+        '200': { description: Signed out successfully }
         '401': { description: Unauthorized }
   /vendor/register:
     post:
@@ -175,14 +363,9 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type: object
-              properties:
-                shopName: { type: string }
-                logo: { type: string, format: binary }
-                location: { type: object, properties: { lat: { type: number }, lng: { type: number } } }
-                hours: { type: object, properties: { open: { type: string }, close: { type: string } } }
+              $ref: '#/components/schemas/VendorRegisterForm'
       responses:
-        '201': { description: Vendor created, content: { application/json: { schema: { $ref: '#/components/schemas/Vendor' } } } }
+        '201': { description: Vendor registered successfully }
         '401': { description: Unauthorized }
   /vendor/profile:
     put:
@@ -195,14 +378,9 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type: object
-              properties:
-                shopName: { type: string }
-                logo: { type: string, format: binary }
-                location: { type: object, properties: { lat: { type: number }, lng: { type: number } } }
-                hours: { type: object, properties: { open: { type: string }, close: { type: string } } }
+              $ref: '#/components/schemas/VendorRegisterForm'
       responses:
-        '200': { description: Updated vendor profile, content: { application/json: { schema: { $ref: '#/components/schemas/Vendor' } } } }
+        '200': { description: Vendor profile updated }
         '401': { description: Unauthorized }
   /vendor/profile/{id}:
     get:
@@ -214,64 +392,37 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: Vendor profile, content: { application/json: { schema: { $ref: '#/components/schemas/Vendor' } } } }
+        '200': { description: Vendor profile returned }
         '404': { description: Vendor not found }
   /vendor/products:
-    post:
-      summary: Add new product
-      tags: [Vendor]
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                name: { type: string }
-                price: { type: number }
-                description: { type: string }
-                photo: { type: string, format: binary }
-                available: { type: boolean }
-      responses:
-        '201': { description: Product created, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
-        '401': { description: Unauthorized }
     get:
       summary: List all products for a vendor
       tags: [Vendor]
       security:
         - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
       responses:
-        '200': { description: List of products, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Product' } } } } }
+        '200':
+          description: Paginated products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+                  total: { type: integer }
+                  limit: { type: integer }
+                  offset: { type: integer }
         '401': { description: Unauthorized }
   /vendor/products/{id}:
-    put:
-      summary: Update product details
-      tags: [Vendor]
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string }
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                name: { type: string }
-                price: { type: number }
-                description: { type: string }
-                photo: { type: string, format: binary }
-                available: { type: boolean }
-      responses:
-        '200': { description: Updated product, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
-        '401': { description: Unauthorized }
-        '404': { description: Product not found }
     delete:
       summary: Delete a product
       tags: [Vendor]
@@ -292,8 +443,27 @@ paths:
       tags: [Vendor]
       security:
         - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
       responses:
-        '200': { description: List of orders, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Order' } } } } }
+        '200':
+          description: Paginated orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items: { $ref: '#/components/schemas/Order' }
+                  total: { type: integer }
+                  limit: { type: integer }
+                  offset: { type: integer }
         '401': { description: Unauthorized }
   /vendor/orders/{id}/status:
     put:
@@ -310,12 +480,9 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                status: { type: string, enum: [pending, preparing, ready, completed] }
+            schema: { $ref: '#/components/schemas/OrderStatusInput' }
       responses:
-        '200': { description: Updated order, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        '200': { description: Order status updated }
         '401': { description: Unauthorized }
         '404': { description: Order not found }
   /vendor/analytics/sales:
@@ -325,7 +492,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200': { description: Sales report, content: { application/json: { schema: { type: object } } } }
+        '501': { description: Not implemented }
         '401': { description: Unauthorized }
   /vendor/analytics/products:
     get:
@@ -334,7 +501,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200': { description: Product performance data, content: { application/json: { schema: { type: object } } } }
+        '501': { description: Not implemented }
         '401': { description: Unauthorized }
   /stepper/register:
     post:
@@ -346,13 +513,9 @@ paths:
         required: true
         content:
           multipart/form-data:
-            schema:
-              type: object
-              properties:
-                studentId: { type: string, format: binary }
-                verificationForm: { type: string, format: binary }
+            schema: { $ref: '#/components/schemas/StepperRegisterForm' }
       responses:
-        '201': { description: Stepper created, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '201': { description: Stepper registered }
         '401': { description: Unauthorized }
   /stepper/deposit:
     post:
@@ -364,10 +527,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                amount: { type: number, example: 1000 }
+            schema: { $ref: '#/components/schemas/StepperDepositInput' }
       responses:
         '200': { description: Deposit processed }
         '401': { description: Unauthorized }
@@ -381,13 +541,9 @@ paths:
         required: true
         content:
           multipart/form-data:
-            schema:
-              type: object
-              properties:
-                picture: { type: string, format: binary }
-                phone: { type: string }
+            schema: { $ref: '#/components/schemas/StepperProfileUpdateForm' }
       responses:
-        '200': { description: Updated profile, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '200': { description: Stepper profile updated }
         '401': { description: Unauthorized }
   /stepper/profile/{id}:
     get:
@@ -399,7 +555,7 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: Stepper profile, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '200': { description: Stepper profile returned }
         '404': { description: Stepper not found }
   /stepper/orders/available:
     get:
@@ -407,8 +563,27 @@ paths:
       tags: [Stepper]
       security:
         - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
       responses:
-        '200': { description: List of orders, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Order' } } } } }
+        '200':
+          description: Paginated nearby orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items: { $ref: '#/components/schemas/Order' }
+                  total: { type: integer }
+                  limit: { type: integer }
+                  offset: { type: integer }
         '401': { description: Unauthorized }
   /stepper/orders/{id}/accept:
     post:
@@ -442,12 +617,22 @@ paths:
         '404': { description: Order not found }
   /stepper/wallet:
     get:
-      summary: Fetch wallet balance, commission history, and deposit growth
+      summary: Fetch wallet balance and commission history
       tags: [Stepper]
       security:
         - BearerAuth: []
       responses:
-        '200': { description: Wallet details, content: { application/json: { schema: { $ref: '#/components/schemas/Wallet' } } } }
+        '200':
+          description: Wallet details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wallet: { $ref: '#/components/schemas/Wallet' }
+                  history:
+                    type: array
+                    items: { $ref: '#/components/schemas/CommissionHistory' }
         '401': { description: Unauthorized }
   /stepper/wallet/withdraw:
     post:
@@ -459,13 +644,10 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                amount: { type: number }
-                twoFactorCode: { type: string }
+            schema: { $ref: '#/components/schemas/WithdrawalInput' }
       responses:
-        '200': { description: Withdrawal requested }
+        '201': { description: Withdrawal requested }
+        '400': { description: Insufficient balance or invalid input }
         '401': { description: Unauthorized }
   /customer/register:
     post:
@@ -477,14 +659,9 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                name: { type: string }
-                hall: { type: string }
-                phone: { type: string }
+            schema: { $ref: '#/components/schemas/CustomerRegisterInput' }
       responses:
-        '201': { description: Customer created, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '201': { description: Customer registered }
         '401': { description: Unauthorized }
   /customer/profile:
     put:
@@ -496,14 +673,9 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                name: { type: string }
-                hall: { type: string }
-                phone: { type: string }
+            schema: { $ref: '#/components/schemas/UpdateProfileInput' }
       responses:
-        '200': { description: Updated profile, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '200': { description: Customer profile updated }
         '401': { description: Unauthorized }
   /customer/profile/{id}:
     get:
@@ -515,24 +687,39 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: Customer profile, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '200': { description: Customer profile returned }
         '404': { description: Customer not found }
   /customer/vendors:
     get:
-      summary: List vendors by category, location, or name
+      summary: List vendors by category or name
       tags: [Customer]
       parameters:
         - name: category
           in: query
           schema: { type: string }
-        - name: location
-          in: query
-          schema: { type: string }
         - name: name
           in: query
           schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
       responses:
-        '200': { description: List of vendors, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Vendor' } } } } }
+        '200':
+          description: Paginated vendors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vendors:
+                    type: array
+                    items: { $ref: '#/components/schemas/Vendor' }
+                  total: { type: integer }
+                  limit: { type: integer }
+                  offset: { type: integer }
   /customer/vendors/{id}/products:
     get:
       summary: Fetch products for a specific vendor
@@ -542,44 +729,28 @@ paths:
           in: path
           required: true
           schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
       responses:
-        '200': { description: List of products, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Product' } } } } }
+        '200':
+          description: Paginated products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+                  total: { type: integer }
+                  limit: { type: integer }
+                  offset: { type: integer }
         '404': { description: Vendor not found }
   /customer/cart:
-    post:
-      summary: Add items to cart
-      tags: [Customer]
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                productId: { type: string }
-                quantity: { type: number }
-      responses:
-        '200': { description: Item added to cart }
-        '401': { description: Unauthorized }
-    put:
-      summary: Update cart items
-      tags: [Customer]
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                productId: { type: string }
-                quantity: { type: number }
-      responses:
-        '200': { description: Cart updated }
-        '401': { description: Unauthorized }
     delete:
       summary: Clear cart
       tags: [Customer]
@@ -589,30 +760,32 @@ paths:
         '200': { description: Cart cleared }
         '401': { description: Unauthorized }
   /customer/orders:
-    post:
-      summary: Place an order with checkout
-      tags: [Customer]
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                items: { type: array, items: { type: object, properties: { productId: { type: string }, quantity: { type: number } } } }
-                paymentDetails: { type: object }
-      responses:
-        '201': { description: Order created, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
-        '401': { description: Unauthorized }
     get:
       summary: List customer’s order history
       tags: [Customer]
       security:
         - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
       responses:
-        '200': { description: List of orders, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Order' } } } } }
+        '200':
+          description: Paginated orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items: { $ref: '#/components/schemas/Order' }
+                  total: { type: integer }
+                  limit: { type: integer }
+                  offset: { type: integer }
         '401': { description: Unauthorized }
   /customer/orders/{id}:
     get:
@@ -624,7 +797,8 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: Order details, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        '200': { description: Order details returned }
+        '400': { description: Order ID required }
         '404': { description: Order not found }
   /customer/orders/{id}/rate:
     post:
@@ -641,13 +815,9 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                vendorRating: { $ref: '#/components/schemas/Rating' }
-                stepperRating: { $ref: '#/components/schemas/Rating' }
+            schema: { $ref: '#/components/schemas/RatingCreateInput' }
       responses:
-        '200': { description: Rating submitted }
+        '201': { description: Rating submitted }
         '401': { description: Unauthorized }
         '404': { description: Order not found }
   /geolocation/stepper:
@@ -660,10 +830,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                location: { type: object, properties: { lat: { type: number }, lng: { type: number } } }
+            schema: { $ref: '#/components/schemas/GeolocationUpdateInput' }
       responses:
         '200': { description: Location updated }
         '401': { description: Unauthorized }
@@ -673,22 +840,60 @@ paths:
       tags: [Geolocation]
       security:
         - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
       responses:
-        '200': { description: List of orders, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Order' } } } } }
+        '200':
+          description: Paginated nearby orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items: { $ref: '#/components/schemas/Order' }
+                  total: { type: integer }
+                  limit: { type: integer }
+                  offset: { type: integer }
+        '400': { description: Stepper location not set }
         '401': { description: Unauthorized }
   /geolocation/track/{orderId}:
     get:
       summary: Track delivery location for active orders
       tags: [Geolocation]
+      security:
+        - BearerAuth: []
       parameters:
         - name: orderId
           in: path
           required: true
           schema: { type: string }
       responses:
-        '200': { description: Location data, content: { application/json: { schema: { type: object, properties: { lat: { type: number }, lng: { type: number } } } } } }
+        '200':
+          description: Location data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  location:
+                    type: object
+                    properties:
+                      type: { type: string, enum: [Point] }
+                      coordinates:
+                        type: array
+                        items: { type: number }
+                        minItems: 2
+                        maxItems: 2
+        '400': { description: Order ID required }
         '401': { description: Unauthorized }
-        '404': { description: Order not found }
+        '404': { description: Order or location not found }
   /payments/deposit:
     post:
       summary: Process stepper’s security deposit
@@ -699,11 +904,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                amount: { type: number }
-                paymentDetails: { type: object }
+            schema: { $ref: '#/components/schemas/StepperDepositInput' }
       responses:
         '200': { description: Deposit processed }
         '401': { description: Unauthorized }
@@ -717,11 +918,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                orderId: { type: string }
-                paymentDetails: { type: object }
+            schema: { $ref: '#/components/schemas/OrderCreateInput' }
       responses:
         '200': { description: Payment processed }
         '401': { description: Unauthorized }
@@ -735,13 +932,10 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                amount: { type: number }
-                twoFactorCode: { type: string }
+            schema: { $ref: '#/components/schemas/WithdrawalInput' }
       responses:
-        '200': { description: Withdrawal requested }
+        '201': { description: Withdrawal requested }
+        '400': { description: Insufficient balance or invalid input }
         '401': { description: Unauthorized }
   /payments/deposit/growth:
     get:
@@ -750,8 +944,16 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200': { description: Deposit growth, content: { application/json: { schema: { type: object, properties: { growth: { type: number } } } } } }
+        '200':
+          description: Deposit growth value
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  growth: { type: number }
         '401': { description: Unauthorized }
+        '404': { description: Wallet not found }
   /notifications/push:
     post:
       summary: Send push notifications
@@ -762,11 +964,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                userId: { type: string }
-                message: { type: string }
+            schema: { $ref: '#/components/schemas/NotificationPushInput' }
       responses:
         '200': { description: Notification sent }
         '401': { description: Unauthorized }
