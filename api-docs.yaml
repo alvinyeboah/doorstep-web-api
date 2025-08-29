@@ -119,7 +119,19 @@ components:
       properties:
         id: { type: string, format: uuid }
         student_id_url: { type: string }
-        verification_form_url: { type: string }
+        government_id_url: { type: string }
+        bank_details:
+          type: object
+          properties:
+            account_number: { type: string }
+            bank_name: { type: string }
+            account_holder_name: { type: string }
+        emergency_contact:
+          type: object
+          properties:
+            name: { type: string }
+            phone: { type: string }
+            relationship: { type: string }
         picture_url: { type: string }
         rating: { type: number }
         location:
@@ -175,8 +187,22 @@ components:
     VendorRegisterForm:
       type: object
       properties:
-        shop_name: { type: string }
-        logo: { type: string, format: binary }
+        # Business Information
+        shop_name: { type: string, description: Name of the business/shop }
+        business_type: { type: string, enum: [restaurant, cafe, food_truck, bakery, grocery, other], description: Type of food business }
+        business_description: { type: string, description: Description of the business }
+        
+        # Business Documents
+        logo: { type: string, format: binary, description: Business logo image }
+        business_license: { type: string, format: binary, description: Business license document }
+        
+        # Business Contact
+        business_phone: { type: string, description: Business phone number }
+        
+        # Business Address
+        address: { type: string, description: Business street address }
+        
+        # Location and Hours
         location:
           type: string
           description: JSON string of { lat: number, lng: number }
@@ -185,11 +211,41 @@ components:
           type: string
           description: JSON string of { open: string, close: string }
           example: '{"open":"09:00","close":"17:00"}'
+        
+        # Financial Information
+        bank_details:
+          type: string
+          description: JSON string of bank account details
+          example: '{"account_number":"1234567890","bank_name":"Bank of Ghana","account_holder_name":"John Doe"}'
     StepperRegisterForm:
       type: object
       properties:
-        student_id: { type: string, format: binary }
-        verification_form: { type: string, format: binary }
+        # Personal Information
+        name: { type: string, description: Full name of the stepper }
+        phone: { type: string, description: Phone number }
+        
+        # Verification Documents
+        student_id: { type: string, format: binary, description: Student ID card image }
+        government_id: { type: string, format: binary, description: National ID, driver's license, or passport }
+        
+        # Financial Information
+        bank_details:
+          type: string
+          description: JSON string of bank account details
+          example: '{"account_number":"1234567890","bank_name":"Bank of Ghana","account_holder_name":"John Doe"}'
+        
+        # Emergency Contact
+        emergency_contact:
+          type: string
+          description: JSON string of emergency contact information
+          example: '{"name":"Jane Doe","phone":"+233201234567","relationship":"Parent"}'
+        
+        # Additional Information
+        vehicle_type: { type: string, enum: [bicycle, motorcycle, car, foot], description: Type of vehicle used for delivery }
+        availability_hours:
+          type: string
+          description: JSON string of availability hours
+          example: '{"start":"09:00","end":"17:00"}'
     StepperProfileUpdateForm:
       type: object
       properties:
@@ -354,7 +410,7 @@ paths:
         '401': { description: Unauthorized }
   /vendor/register:
     post:
-      summary: Register vendor with shop details
+      summary: Register vendor with comprehensive business and owner details
       tags: [Vendor]
       security:
         - BearerAuth: []
@@ -366,6 +422,7 @@ paths:
               $ref: '#/components/schemas/VendorRegisterForm'
       responses:
         '201': { description: Vendor registered successfully }
+        '400': { description: Invalid input data }
         '401': { description: Unauthorized }
   /vendor/profile:
     put:
@@ -505,7 +562,7 @@ paths:
         '401': { description: Unauthorized }
   /stepper/register:
     post:
-      summary: Register stepper with student ID and verification form
+      summary: Register stepper with comprehensive personal and verification details
       tags: [Stepper]
       security:
         - BearerAuth: []
@@ -515,7 +572,8 @@ paths:
           multipart/form-data:
             schema: { $ref: '#/components/schemas/StepperRegisterForm' }
       responses:
-        '201': { description: Stepper registered }
+        '201': { description: Stepper registered successfully }
+        '400': { description: Invalid input data }
         '401': { description: Unauthorized }
   /stepper/deposit:
     post:
