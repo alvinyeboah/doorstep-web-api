@@ -1,35 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from '@/lib/auth-client';
 import Link from 'next/link';
+import { AuthGuard } from '@/components/AuthGuard';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { data: session, isPending } = useSession();
-
-  useEffect(() => {
-    if (!isPending && !session) {
-      router.push('/login');
-    }
-  }, [session, isPending, router]);
-
-  if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return null;
-  }
+  const { data: session } = useSession();
 
   const handleSignOut = async () => {
     await signOut();
@@ -74,6 +52,8 @@ export default function DashboardLayout({
 
     return commonLinks;
   };
+
+  if (!session) return null;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -133,5 +113,17 @@ export default function DashboardLayout({
         {children}
       </main>
     </div>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <AuthGuard>
+      <DashboardContent>{children}</DashboardContent>
+    </AuthGuard>
   );
 }
