@@ -4,6 +4,12 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { VendorModule } from './vendor/vendor.module';
+import { ProductsModule } from './products/products.module';
+import { CustomerModule } from './customer/customer.module';
+import { StepperModule } from './stepper/stepper.module';
+import { OrdersModule } from './orders/orders.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -12,6 +18,12 @@ import { AuthModule } from './auth/auth.module';
     }),
     PrismaModule,
     AuthModule,
+    VendorModule,
+    ProductsModule,
+    CustomerModule,
+    StepperModule,
+    OrdersModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
