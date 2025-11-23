@@ -36,45 +36,88 @@ export default function DashboardLayout({
     router.push('/login');
   };
 
+  const getNavLinks = () => {
+    const role = session.user.role;
+
+    const commonLinks = [
+      { href: '/dashboard', label: 'Dashboard' },
+      { href: '/dashboard/orders', label: 'Orders' },
+    ];
+
+    if (role === 'VENDOR') {
+      return [
+        ...commonLinks,
+        { href: '/dashboard/products', label: 'Products' },
+      ];
+    } else if (role === 'STEPPER') {
+      return [
+        ...commonLinks,
+        { href: '/dashboard/available-orders', label: 'Available Orders' },
+        { href: '/dashboard/wallet', label: 'Wallet' },
+      ];
+    } else if (role === 'CUSTOMER') {
+      return [
+        ...commonLinks,
+        { href: '/dashboard/browse', label: 'Browse Vendors' },
+        { href: '/dashboard/cart', label: 'Cart' },
+      ];
+    }
+
+    return commonLinks;
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-8">
-            <h1 className="text-2xl font-bold text-gray-900">DoorStep</h1>
-            <nav className="flex space-x-4">
-              <Link href="/dashboard" className="text-gray-700 hover:text-gray-900">
-                Dashboard
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-8">
+              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
+                DoorStep
               </Link>
-              <Link href="/dashboard/orders" className="text-gray-700 hover:text-gray-900">
-                Orders
-              </Link>
-              {session.user.role === 'VENDOR' && (
-                <Link href="/dashboard/products" className="text-gray-700 hover:text-gray-900">
-                  Products
-                </Link>
-              )}
-              {session.user.role === 'STEPPER' && (
-                <Link href="/dashboard/wallet" className="text-gray-700 hover:text-gray-900">
-                  Wallet
-                </Link>
-              )}
-            </nav>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-600">
-              {session.user.name} ({session.user.role})
-            </span>
-            <button
-              onClick={handleSignOut}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-            >
-              Sign Out
-            </button>
+              <nav className="hidden md:flex space-x-1">
+                {getNavLinks().map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">{session.user.name}</p>
+                <p className="text-xs text-gray-500 capitalize">{session.user.role.toLowerCase()}</p>
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </header>
+
+      {/* Mobile Navigation */}
+      <div className="md:hidden bg-white border-b">
+        <nav className="max-w-7xl mx-auto px-4 py-2 flex overflow-x-auto space-x-2">
+          {getNavLinks().map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md whitespace-nowrap"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
