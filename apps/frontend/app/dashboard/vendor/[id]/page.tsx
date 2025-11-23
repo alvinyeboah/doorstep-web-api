@@ -1,42 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams, useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import { useParams } from 'next/navigation';
+import { useVendorDetails, useVendorProducts } from '@/hooks/useVendors';
+import { useAddToCart } from '@/hooks/useCart';
 
 export default function VendorProductsPage() {
   const params = useParams();
-  const router = useRouter();
-  const queryClient = useQueryClient();
   const vendorId = params.id as string;
 
-  const { data: vendor } = useQuery({
-    queryKey: ['vendor', vendorId],
-    queryFn: async () => {
-      const res = await api.get(`/api/vendor/profile/${vendorId}`);
-      return res.data;
-    },
-  });
+  const { data: vendor } = useVendorDetails(vendorId);
+  const { data: products, isLoading } = useVendorProducts(vendorId);
+  const addToCartMutation = useAddToCart();
 
-  const { data: products, isLoading } = useQuery({
-    queryKey: ['vendor-products', vendorId],
-    queryFn: async () => {
-      const res = await api.get(`/api/products/vendor/${vendorId}`);
-      return res.data;
-    },
-  });
-
-  const addToCartMutation = useMutation({
-    mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
-      const res = await api.post('/api/customer/cart/add', { productId, quantity });
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-      alert('Added to cart!');
-    },
-  });
+  addToCartMutation.onSuccess = () => {
+    alert('Added to cart!');
+  };
 
   const handleAddToCart = (productId: string) => {
     addToCartMutation.mutate({ productId, quantity: 1 });

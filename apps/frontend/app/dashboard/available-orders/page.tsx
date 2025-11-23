@@ -1,30 +1,11 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { useAvailableOrders } from '@/hooks/useAvailableOrders';
+import { useAcceptOrder } from '@/hooks/useOrders';
 
 export default function AvailableOrdersPage() {
-  const queryClient = useQueryClient();
-
-  const { data: orders, isLoading } = useQuery({
-    queryKey: ['available-orders'],
-    queryFn: async () => {
-      const res = await api.get('/api/orders/available/list');
-      return res.data;
-    },
-    refetchInterval: 10000, // Refresh every 10 seconds
-  });
-
-  const acceptMutation = useMutation({
-    mutationFn: async (orderId: string) => {
-      const res = await api.post(`/api/orders/${orderId}/accept`);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['available-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    },
-  });
+  const { data: orders, isLoading } = useAvailableOrders(10000); // Refresh every 10 seconds
+  const acceptMutation = useAcceptOrder();
 
   if (isLoading) {
     return <div className="text-center py-12">Loading available orders...</div>;

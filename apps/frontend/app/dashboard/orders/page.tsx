@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/lib/auth-client';
-import api from '@/lib/api';
+import { useOrders, useUpdateOrderStatus, useAcceptOrder } from '@/hooks/useOrders';
+import { OrderStatus } from '@/types';
 
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<OrderStatus, string> = {
   PLACED: 'bg-yellow-100 text-yellow-800',
   ACCEPTED: 'bg-blue-100 text-blue-800',
   PREPARING: 'bg-purple-100 text-purple-800',
@@ -18,48 +18,11 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function OrdersPage() {
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('');
 
-  const { data: orders, isLoading } = useQuery({
-    queryKey: ['orders', statusFilter],
-    queryFn: async () => {
-      let endpoint = '/api';
-
-      if (session?.user.role === 'VENDOR') {
-        endpoint += `/vendor/orders${statusFilter ? `?status=${statusFilter}` : ''}`;
-      } else if (session?.user.role === 'STEPPER') {
-        endpoint += `/stepper/orders${statusFilter ? `?status=${statusFilter}` : ''}`;
-      } else if (session?.user.role === 'CUSTOMER') {
-        endpoint += `/customer/orders${statusFilter ? `?status=${statusFilter}` : ''}`;
-      }
-
-      const res = await api.get(endpoint);
-      return res.data;
-    },
-    enabled: !!session,
-  });
-
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      const res = await api.put(`/api/orders/${orderId}/status`, { status });
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    },
-  });
-
-  const acceptOrderMutation = useMutation({
-    mutationFn: async (orderId: string) => {
-      const res = await api.post(`/api/orders/${orderId}/accept`);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['available-orders'] });
-    },
-  });
+  const { data: orders, isLoading } = useOrders(session?.user.role, statusFilter);
+  const updateStatusMutation = useUpdateOrderStatus();
+  const acceptOrderMutation = useAcceptOrder();
 
   const handleStatusUpdate = (orderId: string, status: string) => {
     updateStatusMutation.mutate({ orderId, status });

@@ -51,7 +51,7 @@ export function useWithdraw() {
 
   return useMutation({
     mutationFn: async (amount: number) => {
-      const res = await api.post('/api/stepper/withdraw', { amount });
+      const res = await api.post('/api/stepper/withdrawal', { amount });
       return res.data;
     },
     onSuccess: () => {

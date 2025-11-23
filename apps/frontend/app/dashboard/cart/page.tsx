@@ -1,55 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import {
+  useCart,
+  useUpdateCartItem,
+  useClearCart,
+  useCheckout,
+} from '@/hooks/useCart';
 
 export default function CartPage() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [customerNotes, setCustomerNotes] = useState('');
 
-  const { data: cart, isLoading } = useQuery({
-    queryKey: ['cart'],
-    queryFn: async () => {
-      const res = await api.get('/api/customer/cart');
-      return res.data;
-    },
-  });
+  const { data: cart, isLoading } = useCart();
+  const updateQuantityMutation = useUpdateCartItem();
+  const clearCartMutation = useClearCart();
+  const createOrderMutation = useCheckout();
 
-  const updateQuantityMutation = useMutation({
-    mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
-      const res = await api.put(`/api/customer/cart/item/${itemId}`, { quantity });
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-  });
-
-  const clearCartMutation = useMutation({
-    mutationFn: async () => {
-      const res = await api.delete('/api/customer/cart/clear');
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-  });
-
-  const createOrderMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const res = await api.post('/api/orders', data);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      router.push('/dashboard/orders');
-    },
-  });
+  createOrderMutation.onSuccess = () => {
+    router.push('/dashboard/orders');
+  };
 
   const handleCheckout = () => {
     if (!cart?.items || cart.items.length === 0) {

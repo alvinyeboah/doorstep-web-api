@@ -1,21 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import { useVendors } from '@/hooks/useVendors';
 
 export default function BrowseVendorsPage() {
   const router = useRouter();
   const [search, setSearch] = useState('');
 
-  const { data: vendors, isLoading } = useQuery({
-    queryKey: ['vendors', search],
-    queryFn: async () => {
-      const res = await api.get(`/api/vendor/list${search ? `?search=${search}` : ''}`);
-      return res.data;
-    },
-  });
+  const { data: vendors, isLoading } = useVendors(search);
 
   if (isLoading) {
     return <div className="text-center py-12">Loading vendors...</div>;

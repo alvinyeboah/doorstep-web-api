@@ -17,7 +17,7 @@ export function useAddToCart() {
 
   return useMutation({
     mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
-      const res = await api.post('/api/customer/cart', { productId, quantity });
+      const res = await api.post('/api/customer/cart/add', { productId, quantity });
       return res.data;
     },
     onSuccess: () => {
