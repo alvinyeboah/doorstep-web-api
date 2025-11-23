@@ -10,6 +10,7 @@ import { CustomerModule } from './customer/customer.module';
 import { StepperModule } from './stepper/stepper.module';
 import { OrdersModule } from './orders/orders.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { SuperAdminModule } from './super-admin/super-admin.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     StepperModule,
     OrdersModule,
     NotificationsModule,
+    SuperAdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

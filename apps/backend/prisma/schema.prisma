@@ -52,7 +52,7 @@ model User {
 
   // Custom fields
   phone     String?
-  role      String    @default("CUSTOMER") // VENDOR, STEPPER, CUSTOMER
+  role      String    @default("CUSTOMER") // VENDOR, STEPPER, CUSTOMER, SUPER_ADMIN
   verified  Boolean   @default(false)
 
   // Relations
