@@ -1,0 +1,340 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  VENDOR
+  STEPPER
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PLACED
+  ACCEPTED
+  PREPARING
+  READY
+  OUT_FOR_DELIVERY
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  ORDER_UPDATE
+  RATING
+  PROMOTION
+  SYSTEM
+}
+
+// Better-auth user model
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  emailVerified Boolean   @default(false) @map("email_verified")
+  name          String
+  image         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Custom fields
+  phone     String?
+  role      String    @default("CUSTOMER") // VENDOR, STEPPER, CUSTOMER
+  verified  Boolean   @default(false)
+
+  // Relations
+  sessions      Session[]
+  accounts      Account[]
+  vendor        Vendor?
+  customer      Customer?
+  stepper       Stepper?
+  notifications Notification[]
+
+  @@map("user")
+}
+
+// Better-auth session model
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime @map("expires_at")
+  token     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+// Better-auth account model (for OAuth, etc.)
+model Account {
+  id                String   @id @default(uuid())
+  accountId         String   @map("account_id")
+  providerId        String   @map("provider_id")
+  userId            String   @map("user_id")
+  accessToken       String?  @map("access_token")
+  refreshToken      String?  @map("refresh_token")
+  idToken           String?  @map("id_token")
+  accessTokenExpiresAt DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope             String?
+  password          String?
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+// Better-auth verification model
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("verification")
+}
+
+model Vendor {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  shopName        String   @map("shop_name")
+  logoUrl         String?  @map("logo_url")
+  businessType    String?  @map("business_type")
+  description     String?
+  location        Json?    // GeoJSON Point { type: "Point", coordinates: [lng, lat] }
+  address         String?
+  hours           Json?    // { open: "08:00", close: "22:00" }
+  businessLicense String?  @map("business_license")
+  verified        Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products Product[]
+  orders   Order[]
+  ratings  Rating[]
+
+  @@map("vendors")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  hall      String?
+  address   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cart   Cart?
+  orders Order[]
+
+  @@map("customers")
+}
+
+model Stepper {
+  id                String   @id @default(uuid())
+  userId            String   @unique @map("user_id")
+  studentIdUrl      String?  @map("student_id_url")
+  governmentIdUrl   String?  @map("government_id_url")
+  bankDetails       Json?    @map("bank_details") // { account_number, bank_name, account_holder_name }
+  emergencyContact  Json?    @map("emergency_contact") // { name, phone, relationship }
+  pictureUrl        String?  @map("picture_url")
+  rating            Float?   @default(0)
+  location          Json?    // GeoJSON Point
+  available         Boolean  @default(false)
+  verified          Boolean  @default(false)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet             Wallet?
+  orders             Order[]
+  commissionHistory  CommissionHistory[]
+  withdrawalRequests WithdrawalRequest[]
+  ratings            Rating[]
+
+  @@map("steppers")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  vendorId    String   @map("vendor_id")
+  name        String
+  price       Float
+  description String?
+  photoUrl    String?  @map("photo_url")
+  category    String?
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  vendor     Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+
+  @@map("products")
+}
+
+model Cart {
+  id         String   @id @default(uuid())
+  customerId String   @unique @map("customer_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  customer Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items    CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String   @map("cart_id")
+  productId String   @map("product_id")
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
+}
+
+model Order {
+  id                String      @id @default(uuid())
+  customerId        String      @map("customer_id")
+  vendorId          String      @map("vendor_id")
+  stepperId         String?     @map("stepper_id")
+  status            OrderStatus @default(PLACED)
+  total             Float
+  deliveryFee       Float       @default(0) @map("delivery_fee")
+  deliveryAddress   String?     @map("delivery_address")
+  deliveryLocation  Json?       @map("delivery_location") // GeoJSON Point
+  customerNotes     String?     @map("customer_notes")
+  estimatedDelivery DateTime?   @map("estimated_delivery")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  customer          Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  vendor            Vendor              @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  stepper           Stepper?            @relation(fields: [stepperId], references: [id], onDelete: SetNull)
+  items             OrderItem[]
+  rating            Rating?
+  commissionHistory CommissionHistory?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  productId String   @map("product_id")
+  quantity  Int
+  price     Float    // Price at time of order
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Rating {
+  id            String   @id @default(uuid())
+  orderId       String   @unique @map("order_id")
+  vendorId      String   @map("vendor_id")
+  stepperId     String?  @map("stepper_id")
+  vendorRating  Int?     @map("vendor_rating") // 1-5
+  stepperRating Int?     @map("stepper_rating") // 1-5
+  feedback      String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  vendor  Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  stepper Stepper? @relation(fields: [stepperId], references: [id], onDelete: SetNull)
+
+  @@map("ratings")
+}
+
+model Wallet {
+  id             String   @id @default(uuid())
+  stepperId      String   @unique @map("stepper_id")
+  balance        Float    @default(0)
+  depositAmount  Float    @default(0) @map("deposit_amount")
+  depositGrowth  Float    @default(0) @map("deposit_growth")
+  totalEarned    Float    @default(0) @map("total_earned")
+  totalWithdrawn Float    @default(0) @map("total_withdrawn")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  stepper Stepper @relation(fields: [stepperId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+model CommissionHistory {
+  id        String   @id @default(uuid())
+  stepperId String   @map("stepper_id")
+  orderId   String   @unique @map("order_id")
+  amount    Float
+  createdAt DateTime @default(now()) @map("created_at")
+
+  stepper Stepper @relation(fields: [stepperId], references: [id], onDelete: Cascade)
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("commission_history")
+}
+
+model WithdrawalRequest {
+  id             String           @id @default(uuid())
+  stepperId      String           @map("stepper_id")
+  amount         Float
+  status         WithdrawalStatus @default(PENDING)
+  twoFactorCode  String?          @map("two_factor_code")
+  processedAt    DateTime?        @map("processed_at")
+  rejectionNote  String?          @map("rejection_note")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  stepper Stepper @relation(fields: [stepperId], references: [id], onDelete: Cascade)
+
+  @@map("withdrawal_requests")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  message   String
+  type      NotificationType
+  read      Boolean          @default(false)
+  metadata  Json?            // Additional data like order_id, etc.
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
