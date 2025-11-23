@@ -39,6 +39,15 @@ export default function DashboardLayout({
   const getNavLinks = () => {
     const role = session.user.role;
 
+    if (role === 'SUPER_ADMIN') {
+      return [
+        { href: '/dashboard/admin', label: 'Dashboard' },
+        { href: '/dashboard/admin/vendors', label: 'Vendors' },
+        { href: '/dashboard/admin/orders', label: 'Orders' },
+        { href: '/dashboard/admin/revenue', label: 'Revenue' },
+      ];
+    }
+
     const commonLinks = [
       { href: '/dashboard', label: 'Dashboard' },
       { href: '/dashboard/orders', label: 'Orders' },

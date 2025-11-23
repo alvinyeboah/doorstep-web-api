@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -12,6 +13,19 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
+  },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      enabled: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET,
+    },
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ['google'],
+    },
   },
   user: {
     additionalFields: {
@@ -36,10 +50,46 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5, // 5 minutes
+    },
   },
+  advanced: {
+    database: {
+      generateId: () => randomUUID(),
+    },
+  },
+  middleware: {
+    pre: async (request) => {
+      console.log(`[Auth Middleware] ${request.method} ${request.url}`);
+      return request;
+    },
+    post: async (response) => {
+      return response;
+    },
+  },
+  onUserCreated: async (user) => {
+    console.log('[Auth] User created:', user.id, user.email, user.role);
+    // You can add additional logic here like sending welcome emails
+  },
+  onUserUpdated: async (user) => {
+    console.log('[Auth] User updated:', user.id, user.email);
+  },
+  onUserDeleted: async (user) => {
+    console.log('[Auth] User deleted:', user.id, user.email);
+  },
+  cors: [
+    'http://localhost:3001',
+    process.env.FRONTEND_URL || '',
+    'https://doorstepvendor.alvinyeboah.com',
+  ].filter(Boolean),
   trustedOrigins: [
-    process.env.FRONTEND_URL || 'http://localhost:3001',
-  ],
+    'http://localhost:3001',
+    process.env.FRONTEND_URL || '',
+    'https://doorstepvendor.alvinyeboah.com',
+    process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+  ].filter(Boolean),
   secret: process.env.BETTER_AUTH_SECRET || 'your-secret-key-change-in-production',
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
 });
