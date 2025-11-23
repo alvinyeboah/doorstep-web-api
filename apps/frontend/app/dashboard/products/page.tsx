@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/api';
+import {
+  useVendorProducts,
+  useCreateProduct,
+  useUpdateProduct,
+  useDeleteProduct,
+} from '@/hooks/useVendorProducts';
 
 export default function VendorProductsPage() {
-  const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -17,46 +20,20 @@ export default function VendorProductsPage() {
     available: true,
   });
 
-  const { data: products, isLoading } = useQuery({
-    queryKey: ['vendor-products'],
-    queryFn: async () => {
-      const res = await api.get('/api/products/my-products');
-      return res.data;
-    },
-  });
+  const { data: products, isLoading } = useVendorProducts();
+  const createMutation = useCreateProduct();
+  const updateMutation = useUpdateProduct();
+  const deleteMutation = useDeleteProduct();
 
-  const createMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const res = await api.post('/api/products', data);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendor-products'] });
-      setShowAddModal(false);
-      resetForm();
-    },
-  });
+  createMutation.onSuccess = () => {
+    setShowAddModal(false);
+    resetForm();
+  };
 
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: any) => {
-      const res = await api.put(`/api/products/${id}`, data);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendor-products'] });
-      setEditingProduct(null);
-      resetForm();
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await api.delete(`/api/products/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendor-products'] });
-    },
-  });
+  updateMutation.onSuccess = () => {
+    setEditingProduct(null);
+    resetForm();
+  };
 
   const resetForm = () => {
     setFormData({

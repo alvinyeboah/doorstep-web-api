@@ -1,29 +1,11 @@
 'use client';
 
 import { useSession } from '@/lib/auth-client';
-import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-
-  const { data: stats } = useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: async () => {
-      if (session?.user.role === 'VENDOR') {
-        const res = await api.get('/api/vendor/analytics');
-        return res.data;
-      } else if (session?.user.role === 'CUSTOMER') {
-        const res = await api.get('/api/customer/orders');
-        return { totalOrders: res.data.length };
-      } else if (session?.user.role === 'STEPPER') {
-        const res = await api.get('/api/stepper/wallet');
-        return res.data;
-      }
-      return {};
-    },
-    enabled: !!session,
-  });
+  const { data: stats } = useDashboardStats(session?.user.role);
 
   return (
     <div className="space-y-6">

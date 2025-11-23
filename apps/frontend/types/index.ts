@@ -134,3 +134,50 @@ export interface CartItem {
   quantity: number;
   product: Product;
 }
+
+export interface Cart {
+  items: CartItem[];
+  total: number;
+}
+
+// Wallet & Stepper Financial
+export interface Wallet {
+  balance: number;
+  totalEarned: number;
+  depositAmount: number;
+}
+
+export interface Commission {
+  id: string;
+  amount: number;
+  orderId: string;
+  createdAt: string;
+}
+
+export interface Withdrawal {
+  id: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+}
+
+// Dashboard Stats
+export interface VendorStats {
+  totalOrders: number;
+  completedOrders: number;
+  totalRevenue: number;
+  totalProducts: number;
+  averageRating: number;
+}
+
+export interface StepperStats {
+  balance: number;
+  totalEarned: number;
+  depositAmount: number;
+}
+
+export interface CustomerStats {
+  totalOrders: number;
+}
+
+export type DashboardStats = VendorStats | StepperStats | CustomerStats | Record<string, never>;
