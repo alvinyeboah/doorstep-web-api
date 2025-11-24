@@ -1,11 +1,11 @@
 import { All, Controller, Req, Res } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { auth } from '../lib/auth';
 
 @Controller('auth')
 export class AuthController {
   @All('*')
   async handleAuth(@Req() req: Request, @Res() res: Response) {
-    return auth.handler(req, res);
+    return auth.handler(req);
   }
 }
