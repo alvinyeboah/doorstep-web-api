@@ -1,27 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { UseSend } from 'usesend-js';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter;
+  private usesend: UseSend;
 
   constructor(private configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: this.configService.get('EMAIL_HOST'),
-      port: this.configService.get('EMAIL_PORT'),
-      auth: {
-        user: this.configService.get('EMAIL_USER'),
-        pass: this.configService.get('EMAIL_PASSWORD'),
-      },
-    });
+    const apiKey = this.configService.get<string>('USESEND_API_KEY');
+    const baseUrl = this.configService.get<string>('USESEND_BASE_URL');
+
+    // Initialize UseSend with API key and optional base URL for self-hosted instances
+    this.usesend = baseUrl
+      ? new UseSend(apiKey, baseUrl)
+      : new UseSend(apiKey);
   }
 
   async sendOTP(email: string, otp: string): Promise<void> {
     try {
-      await this.transporter.sendMail({
-        from: this.configService.get('EMAIL_FROM'),
+      await this.usesend.emails.send({
+        from: this.configService.get<string>('EMAIL_FROM'),
         to: email,
         subject: 'DoorStep - Email Verification',
         html: `
@@ -29,6 +28,7 @@ export class EmailService {
           <p>Your verification code is: <strong>${otp}</strong></p>
           <p>This code will expire in 10 minutes.</p>
         `,
+        text: `Email Verification\n\nYour verification code is: ${otp}\n\nThis code will expire in 10 minutes.`,
       });
       this.logger.log(`OTP sent to ${email}`);
     } catch (error) {
@@ -39,8 +39,8 @@ export class EmailService {
 
   async sendWelcomeEmail(email: string, name: string): Promise<void> {
     try {
-      await this.transporter.sendMail({
-        from: this.configService.get('EMAIL_FROM'),
+      await this.usesend.emails.send({
+        from: this.configService.get<string>('EMAIL_FROM'),
         to: email,
         subject: 'Welcome to DoorStep!',
         html: `
@@ -48,7 +48,9 @@ export class EmailService {
           <p>Thank you for joining our campus food delivery platform.</p>
           <p>Get started by completing your profile setup.</p>
         `,
+        text: `Welcome to DoorStep, ${name}!\n\nThank you for joining our campus food delivery platform.\n\nGet started by completing your profile setup.`,
       });
+      this.logger.log(`Welcome email sent to ${email}`);
     } catch (error) {
       this.logger.error(`Failed to send welcome email to ${email}:`, error);
     }

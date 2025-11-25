@@ -22,7 +22,7 @@ doorstep-api/
 - **Authentication**: Better-Auth (modern, secure auth library)
 - **Database**: PostgreSQL with Prisma ORM
 - **Validation**: class-validator & class-transformer
-- **Email**: Nodemailer for OTP and notifications
+- **Email**: useSend (open source email platform) for OTP and notifications
 
 ### Frontend (Next.js)
 - **Framework**: Next.js 16 (App Router)
@@ -59,11 +59,11 @@ doorstep-api/
    # Frontend URL for CORS
    FRONTEND_URL=http://localhost:3001
 
-   # Email (Optional - for OTP)
-   EMAIL_HOST=smtp.gmail.com
-   EMAIL_PORT=587
-   EMAIL_USER=your-email@gmail.com
-   EMAIL_PASSWORD=your-app-password
+   # Email (useSend - for OTP and notifications)
+   # Get your API key from https://usesend.com dashboard
+   USESEND_API_KEY=us_your_api_key_here
+   # Optional: For self-hosted useSend instances
+   # USESEND_BASE_URL=https://your-usesend-domain.com
    EMAIL_FROM=noreply@doorstep.com
    ```
 
