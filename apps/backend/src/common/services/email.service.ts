@@ -1,34 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { PlunkService } from './plunk.service';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter;
 
-  constructor(private configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: this.configService.get('EMAIL_HOST'),
-      port: this.configService.get('EMAIL_PORT'),
-      auth: {
-        user: this.configService.get('EMAIL_USER'),
-        pass: this.configService.get('EMAIL_PASSWORD'),
-      },
-    });
-  }
+  constructor(
+    private configService: ConfigService,
+    private plunkService: PlunkService,
+  ) {}
 
   async sendOTP(email: string, otp: string): Promise<void> {
     try {
-      await this.transporter.sendMail({
-        from: this.configService.get('EMAIL_FROM'),
+      await this.plunkService.sendEmail({
         to: email,
+        from: this.configService.get<string>('EMAIL_FROM'),
         subject: 'DoorStep - Email Verification',
-        html: `
+        body: `
           <h2>Email Verification</h2>
           <p>Your verification code is: <strong>${otp}</strong></p>
           <p>This code will expire in 10 minutes.</p>
         `,
+        name: 'DoorStep',
       });
       this.logger.log(`OTP sent to ${email}`);
     } catch (error) {
@@ -39,16 +33,18 @@ export class EmailService {
 
   async sendWelcomeEmail(email: string, name: string): Promise<void> {
     try {
-      await this.transporter.sendMail({
-        from: this.configService.get('EMAIL_FROM'),
+      await this.plunkService.sendEmail({
         to: email,
+        from: this.configService.get<string>('EMAIL_FROM'),
         subject: 'Welcome to DoorStep!',
-        html: `
+        body: `
           <h2>Welcome to DoorStep, ${name}!</h2>
           <p>Thank you for joining our campus food delivery platform.</p>
           <p>Get started by completing your profile setup.</p>
         `,
+        name: 'DoorStep',
       });
+      this.logger.log(`Welcome email sent to ${email}`);
     } catch (error) {
       this.logger.error(`Failed to send welcome email to ${email}:`, error);
     }

@@ -11,6 +11,7 @@ import { StepperModule } from './stepper/stepper.module';
 import { OrdersModule } from './orders/orders.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SuperAdminModule } from './super-admin/super-admin.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SuperAdminModule } from './super-admin/super-admin.module';
     OrdersModule,
     NotificationsModule,
     SuperAdminModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],
