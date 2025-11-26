@@ -22,7 +22,8 @@ doorstep-api/
 - **Authentication**: Better-Auth (modern, secure auth library)
 - **Database**: PostgreSQL with Prisma ORM
 - **Validation**: class-validator & class-transformer
-- **Email**: useSend (open source email platform) for OTP and notifications
+- **Email**: Plunk (transactional email service) for OTP and notifications
+- **File Storage**: Cloudflare R2 for product images, avatars, and documents
 
 ### Frontend (Next.js)
 - **Framework**: Next.js 16 (App Router)
@@ -53,18 +54,25 @@ doorstep-api/
    NODE_ENV=development
 
    # Better-Auth
-   BETTER_AUTH_SECRET=your-secret-key
    BETTER_AUTH_URL=http://localhost:3000
+
+   # Google OAuth (Optional)
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
 
    # Frontend URL for CORS
    FRONTEND_URL=http://localhost:3001
 
-   # Email (useSend - for OTP and notifications)
-   # Get your API key from https://usesend.com dashboard
-   USESEND_API_KEY=us_your_api_key_here
-   # Optional: For self-hosted useSend instances
-   # USESEND_BASE_URL=https://your-usesend-domain.com
+   # Email (Plunk - for OTP and notifications)
+   PLUNK_API_KEY=your_plunk_api_key_here
    EMAIL_FROM=noreply@doorstep.com
+
+   # Cloudflare R2 Storage
+   CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+   CLOUDFLARE_ACCESS_KEY=your_r2_access_key
+   CLOUDFLARE_SECRET_KEY=your_r2_secret_key
+   R2_BUCKET_NAME=doorstep
+   ASSETS_PUBLIC_BASE_URL=https://doorstep.your-domain.com
    ```
 
 3. **Set up database**:
