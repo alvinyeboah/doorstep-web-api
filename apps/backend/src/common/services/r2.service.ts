@@ -24,13 +24,11 @@ export class R2Service {
   private readonly logger = new Logger(R2Service.name);
   private readonly s3Client: S3Client;
   private readonly bucketName: string;
-  private readonly region: string;
   private readonly accountId: string;
 
   constructor(private configService: ConfigService) {
     this.accountId = this.configService.get<string>('CLOUDFLARE_ACCOUNT_ID') || '';
     this.bucketName = this.configService.get<string>('R2_BUCKET_NAME') || '';
-    this.region = this.configService.get<string>('R2_REGION') || 'auto';
 
     const accessKeyId = this.configService.get<string>('CLOUDFLARE_ACCESS_KEY') || '';
     const secretAccessKey = this.configService.get<string>('CLOUDFLARE_SECRET_KEY') || '';
@@ -40,7 +38,7 @@ export class R2Service {
     }
 
     this.s3Client = new S3Client({
-      region: this.region,
+      region: 'auto',
       endpoint: this.configService.get<string>('CLOUDFLARE_R2_URL') || `https://${this.accountId}.r2.cloudflarestorage.com`,
       credentials: {
         accessKeyId: accessKeyId,

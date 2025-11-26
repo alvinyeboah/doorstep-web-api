@@ -67,7 +67,7 @@ doorstep-api/
    PLUNK_API_KEY=your_plunk_api_key_here
    EMAIL_FROM=noreply@doorstep.com
 
-   # Cloudflare R2 Storage
+   # Cloudflare R2 Storage (all uploads go to R2)
    CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
    CLOUDFLARE_ACCESS_KEY=your_r2_access_key
    CLOUDFLARE_SECRET_KEY=your_r2_secret_key
