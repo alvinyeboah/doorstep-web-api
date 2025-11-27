@@ -3,7 +3,11 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  adapter: {
+    url: process.env.DATABASE_URL,
+  },
+});
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
