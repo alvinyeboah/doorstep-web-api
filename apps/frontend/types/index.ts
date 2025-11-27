@@ -15,6 +15,11 @@ export interface Vendor {
   businessType?: string;
   address?: string;
   logoUrl?: string;
+  description?: string;
+  hours?: {
+    open: string;
+    close: string;
+  };
   verified: boolean;
   user: {
     name: string;
@@ -34,6 +39,8 @@ export interface Product {
   description?: string;
   price: number;
   imageUrl?: string;
+  photoUrl?: string;
+  category?: string;
   available: boolean;
   vendorId: string;
   vendor?: Vendor;
@@ -67,20 +74,23 @@ export interface Order {
   createdAt: string;
   vendor: {
     shopName: string;
+    address?: string;
     user: {
       email: string;
     };
   };
   customer: {
+    hall?: string;
     user: {
       name: string;
       email: string;
+      phone?: string;
     };
   };
   stepper?: {
     user: {
       name: string;
-      phone: string;
+      phone?: string;
     };
   };
   items: OrderItem[];

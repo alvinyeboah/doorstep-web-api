@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterVendorDto, UpdateVendorDto } from './dto/vendor.dto';
 
@@ -11,6 +15,10 @@ export class VendorService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     if (user.role !== 'VENDOR') {
       throw new ForbiddenException('Only vendors can register as vendors');

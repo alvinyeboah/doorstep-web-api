@@ -1,6 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateOrderDto, UpdateOrderStatusDto, RateOrderDto } from './dto/order.dto';
+import {
+  CreateOrderDto,
+  UpdateOrderStatusDto,
+  RateOrderDto,
+} from './dto/order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -25,7 +34,9 @@ export class OrdersService {
       });
 
       if (!product || !product.available) {
-        throw new BadRequestException(`Product ${item.productId} not available`);
+        throw new BadRequestException(
+          `Product ${item.productId} not available`,
+        );
       }
 
       total += product.price * item.quantity;

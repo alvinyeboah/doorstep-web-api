@@ -7,11 +7,20 @@ import {
   useUpdateProduct,
   useDeleteProduct,
 } from '@/hooks/useVendorProducts';
+import Image from 'next/image';
+import { Product } from '@/types';
 
 export default function VendorProductsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [formData, setFormData] = useState({
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [formData, setFormData] = useState<{
+    name: string;
+    price: string;
+    description: string;
+    category: string;
+    photoUrl: string;
+    available: boolean;
+  }>({
     name: '',
     price: '',
     description: '',
@@ -24,16 +33,6 @@ export default function VendorProductsPage() {
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
   const deleteMutation = useDeleteProduct();
-
-  createMutation.onSuccess = () => {
-    setShowAddModal(false);
-    resetForm();
-  };
-
-  updateMutation.onSuccess = () => {
-    setEditingProduct(null);
-    resetForm();
-  };
 
   const resetForm = () => {
     setFormData({
@@ -54,13 +53,26 @@ export default function VendorProductsPage() {
     };
 
     if (editingProduct) {
-      updateMutation.mutate({ id: editingProduct.id, data });
+      updateMutation.mutate(
+        { id: editingProduct.id, data },
+        {
+          onSuccess: () => {
+            setEditingProduct(null);
+            resetForm();
+          },
+        }
+      );
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(data, {
+        onSuccess: () => {
+          setShowAddModal(false);
+          resetForm();
+        },
+      });
     }
   };
 
-  const handleEdit = (product: any) => {
+  const handleEdit = (product: Product) => {
     setEditingProduct(product);
     setFormData({
       name: product.name,
@@ -90,14 +102,17 @@ export default function VendorProductsPage() {
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products?.map((product: any) => (
+        {products?.map((product: Product) => (
           <div key={product.id} className="bg-white rounded-lg shadow p-6">
             {product.photoUrl && (
-              <img
-                src={product.photoUrl}
-                alt={product.name}
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
+              <div className="relative w-full h-48 mb-4">
+                <Image
+                  src={product.photoUrl}
+                  alt={product.name}
+                  fill
+                  className="object-cover rounded-lg"
+                />
+              </div>
             )}
             <div className="space-y-2">
               <div className="flex justify-between items-start">
@@ -252,8 +267,8 @@ export default function VendorProductsPage() {
                   {createMutation.isPending || updateMutation.isPending
                     ? 'Saving...'
                     : editingProduct
-                    ? 'Update'
-                    : 'Add Product'}
+                      ? 'Update'
+                      : 'Add Product'}
                 </button>
               </div>
             </form>

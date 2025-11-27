@@ -1,10 +1,13 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useVendorDetails, useVendorProducts } from '@/hooks/useVendors';
 import { useAddToCart } from '@/hooks/useCart';
+import Image from 'next/image';
+import { Product } from '@/types';
 
 export default function VendorProductsPage() {
+  const router = useRouter();
   const params = useParams();
   const vendorId = params.id as string;
 
@@ -12,12 +15,15 @@ export default function VendorProductsPage() {
   const { data: products, isLoading } = useVendorProducts(vendorId);
   const addToCartMutation = useAddToCart();
 
-  addToCartMutation.onSuccess = () => {
-    alert('Added to cart!');
-  };
-
   const handleAddToCart = (productId: string) => {
-    addToCartMutation.mutate({ productId, quantity: 1 });
+    addToCartMutation.mutate(
+      { productId, quantity: 1 },
+      {
+        onSuccess: () => {
+          alert('Added to cart!');
+        },
+      }
+    );
   };
 
   if (isLoading) {
@@ -54,14 +60,17 @@ export default function VendorProductsPage() {
       <div>
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Menu</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products?.map((product: any) => (
+          {products?.map((product: Product) => (
             <div key={product.id} className="bg-white rounded-lg shadow overflow-hidden">
               {product.photoUrl && (
-                <img
-                  src={product.photoUrl}
-                  alt={product.name}
-                  className="w-full h-48 object-cover"
-                />
+                <div className="relative w-full h-48">
+                  <Image
+                    src={product.photoUrl}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
               )}
               <div className="p-6">
                 <div className="flex justify-between items-start mb-2">
@@ -81,17 +90,16 @@ export default function VendorProductsPage() {
                 <button
                   onClick={() => handleAddToCart(product.id)}
                   disabled={!product.available || addToCartMutation.isPending}
-                  className={`w-full px-4 py-2 rounded-lg font-medium ${
-                    product.available
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  } disabled:opacity-50`}
+                  className={`w-full px-4 py-2 rounded-lg font-medium ${product.available
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    } disabled:opacity-50`}
                 >
                   {addToCartMutation.isPending
                     ? 'Adding...'
                     : product.available
-                    ? 'Add to Cart'
-                    : 'Unavailable'}
+                      ? 'Add to Cart'
+                      : 'Unavailable'}
                 </button>
               </div>
             </div>

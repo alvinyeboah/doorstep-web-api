@@ -8,6 +8,8 @@ import {
   useClearCart,
   useCheckout,
 } from '@/hooks/useCart';
+import Image from 'next/image';
+import { CartItem } from '@/types';
 
 export default function CartPage() {
   const router = useRouter();
@@ -19,38 +21,19 @@ export default function CartPage() {
   const clearCartMutation = useClearCart();
   const createOrderMutation = useCheckout();
 
-  createOrderMutation.onSuccess = () => {
-    router.push('/dashboard/orders');
-  };
-
   const handleCheckout = () => {
     if (!cart?.items || cart.items.length === 0) {
       alert('Cart is empty');
       return;
     }
 
-    // Group items by vendor
-    const itemsByVendor = cart.items.reduce((acc: any, item: any) => {
-      const vendorId = item.product.vendor.id;
-      if (!acc[vendorId]) {
-        acc[vendorId] = [];
-      }
-      acc[vendorId].push({
-        productId: item.productId,
-        quantity: item.quantity,
-      });
-      return acc;
-    }, {});
-
-    // Create order for first vendor (in real app, handle multiple vendors)
-    const vendorId = Object.keys(itemsByVendor)[0];
-    const items = itemsByVendor[vendorId];
-
     createOrderMutation.mutate({
-      vendorId,
-      items,
       deliveryAddress,
       customerNotes,
+    }, {
+      onSuccess: () => {
+        router.push('/dashboard/orders');
+      }
     });
   };
 
@@ -80,18 +63,21 @@ export default function CartPage() {
         <>
           {/* Cart Items */}
           <div className="bg-white rounded-lg shadow divide-y">
-            {cart.items.map((item: any) => (
+            {cart.items.map((item: CartItem) => (
               <div key={item.id} className="p-6 flex items-center space-x-4">
                 {item.product.photoUrl && (
-                  <img
-                    src={item.product.photoUrl}
-                    alt={item.product.name}
-                    className="w-20 h-20 object-cover rounded"
-                  />
+                  <div className="relative w-20 h-20">
+                    <Image
+                      src={item.product.photoUrl}
+                      alt={item.product.name}
+                      fill
+                      className="object-cover rounded"
+                    />
+                  </div>
                 )}
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">{item.product.name}</h3>
-                  <p className="text-sm text-gray-600">{item.product.vendor.shopName}</p>
+                  <p className="text-sm text-gray-600">{item.product.vendor?.shopName}</p>
                   <p className="text-sm text-gray-900 mt-1">
                     ${item.product.price.toFixed(2)} each
                   </p>

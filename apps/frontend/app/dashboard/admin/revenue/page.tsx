@@ -1,12 +1,13 @@
 'use client';
 
 import { useAdminRevenue } from '@/hooks/useAdminRevenue';
+import { VendorRevenue } from '@/types';
 
 export default function AdminRevenuePage() {
   const { data: revenueData, isLoading } = useAdminRevenue();
 
-  const totalRevenue = revenueData?.reduce((sum: number, vendor: any) => sum + vendor.totalRevenue, 0) || 0;
-  const totalOrders = revenueData?.reduce((sum: number, vendor: any) => sum + vendor.totalOrders, 0) || 0;
+  const totalRevenue = revenueData?.reduce((sum: number, vendor: VendorRevenue) => sum + vendor.totalRevenue, 0) || 0;
+  const totalOrders = revenueData?.reduce((sum: number, vendor: VendorRevenue) => sum + vendor.totalOrders, 0) || 0;
 
   if (isLoading) {
     return <div className="text-center py-12">Loading revenue data...</div>;
@@ -69,20 +70,19 @@ export default function AdminRevenuePage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {revenueData?.map((vendor: any, index: number) => (
+              {revenueData?.map((vendor: VendorRevenue, index: number) => (
                 <tr key={vendor.vendorId} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <span
-                        className={`text-sm font-semibold ${
-                          index === 0
+                        className={`text-sm font-semibold ${index === 0
                             ? 'text-yellow-600'
                             : index === 1
-                            ? 'text-gray-400'
-                            : index === 2
-                            ? 'text-orange-600'
-                            : 'text-gray-600'
-                        }`}
+                              ? 'text-gray-400'
+                              : index === 2
+                                ? 'text-orange-600'
+                                : 'text-gray-600'
+                          }`}
                       >
                         #{index + 1}
                       </span>

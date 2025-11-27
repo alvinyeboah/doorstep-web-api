@@ -23,17 +23,38 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      await signUp.email({
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
-        phone: formData.phone,
-        role: formData.role,
-      });
-
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign up');
+      await signUp.email(
+        {
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+        },
+        {
+          onRequest: (ctx) => {
+            // Add custom fields to the request body
+            return {
+              ...ctx,
+              body: {
+                ...ctx.body,
+                phone: formData.phone,
+                role: formData.role,
+              },
+            };
+          },
+          onSuccess: async () => {
+            router.push('/dashboard');
+          },
+          onError: (ctx) => {
+            setError(ctx.error.message || 'Failed to sign up');
+          },
+        }
+      );
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to sign up');
+      } else {
+        setError('Failed to sign up');
+      }
     } finally {
       setLoading(false);
     }

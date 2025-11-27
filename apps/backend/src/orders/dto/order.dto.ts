@@ -1,4 +1,11 @@
-import { IsString, IsArray, IsOptional, IsNotEmpty, IsNumber, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsOptional,
+  IsNotEmpty,
+  IsNumber,
+  IsEnum,
+} from 'class-validator';
 
 export class CreateOrderDto {
   @IsString()
@@ -22,7 +29,16 @@ export class CreateOrderDto {
 }
 
 export class UpdateOrderStatusDto {
-  @IsEnum(['PLACED', 'ACCEPTED', 'PREPARING', 'READY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'COMPLETED', 'CANCELLED'])
+  @IsEnum([
+    'PLACED',
+    'ACCEPTED',
+    'PREPARING',
+    'READY',
+    'OUT_FOR_DELIVERY',
+    'DELIVERED',
+    'COMPLETED',
+    'CANCELLED',
+  ])
   @IsNotEmpty()
   status: string;
 }

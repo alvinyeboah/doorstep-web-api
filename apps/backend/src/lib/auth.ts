@@ -18,7 +18,8 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      enabled: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET,
+      enabled:
+        !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET,
     },
   },
   account: {
@@ -61,22 +62,22 @@ export const auth = betterAuth({
     },
   },
   middleware: {
-    pre: async (request) => {
+    pre: async (request: any) => {
       console.log(`[Auth Middleware] ${request.method} ${request.url}`);
       return request;
     },
-    post: async (response) => {
+    post: async (response: any) => {
       return response;
     },
   },
-  onUserCreated: async (user) => {
+  onUserCreated: async (user: any) => {
     console.log('[Auth] User created:', user.id, user.email, user.role);
     // You can add additional logic here like sending welcome emails
   },
-  onUserUpdated: async (user) => {
+  onUserUpdated: async (user: any) => {
     console.log('[Auth] User updated:', user.id, user.email);
   },
-  onUserDeleted: async (user) => {
+  onUserDeleted: async (user: any) => {
     console.log('[Auth] User deleted:', user.id, user.email);
   },
   cors: [
@@ -90,7 +91,8 @@ export const auth = betterAuth({
     'https://doorstepvendor.alvinyeboah.com',
     process.env.BETTER_AUTH_URL || 'http://localhost:3000',
   ].filter(Boolean),
-  secret: process.env.BETTER_AUTH_SECRET || 'your-secret-key-change-in-production',
+  secret:
+    process.env.BETTER_AUTH_SECRET || 'your-secret-key-change-in-production',
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
 });
 

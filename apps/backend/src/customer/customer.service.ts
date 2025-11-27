@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   RegisterCustomerDto,
@@ -16,6 +21,10 @@ export class CustomerService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     if (user.role !== 'CUSTOMER') {
       throw new ForbiddenException('Only customers can register as customers');
@@ -135,10 +144,11 @@ export class CustomerService {
       },
     });
 
-    const total = cart?.items.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
-      0,
-    ) || 0;
+    const total =
+      cart?.items.reduce(
+        (sum, item) => sum + item.product.price * item.quantity,
+        0,
+      ) || 0;
 
     return {
       ...cart,

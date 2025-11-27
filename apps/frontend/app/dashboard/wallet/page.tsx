@@ -8,6 +8,7 @@ import {
   useDeposit,
   useWithdraw,
 } from '@/hooks/useWallet';
+import { Commission, Withdrawal } from '@/types';
 
 export default function WalletPage() {
   const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -19,26 +20,26 @@ export default function WalletPage() {
   const depositMutation = useDeposit();
   const withdrawMutation = useWithdraw();
 
-  depositMutation.onSuccess = () => {
-    setDepositAmount('');
-  };
-
-  withdrawMutation.onSuccess = (data: any) => {
-    setWithdrawAmount('');
-    alert(`Withdrawal request created! 2FA Code: ${data.twoFactorCode}`);
-  };
-
   const handleDeposit = () => {
     const amount = parseFloat(depositAmount);
     if (amount > 0) {
-      depositMutation.mutate(amount);
+      depositMutation.mutate(amount, {
+        onSuccess: () => {
+          setDepositAmount('');
+        },
+      });
     }
   };
 
   const handleWithdraw = () => {
     const amount = parseFloat(withdrawAmount);
     if (amount > 0 && wallet && amount <= wallet.balance) {
-      withdrawMutation.mutate(amount);
+      withdrawMutation.mutate(amount, {
+        onSuccess: (data: { twoFactorCode: string }) => {
+          setWithdrawAmount('');
+          alert(`Withdrawal request created! 2FA Code: ${data.twoFactorCode}`);
+        },
+      });
     } else {
       alert('Insufficient balance or invalid amount');
     }
@@ -115,7 +116,7 @@ export default function WalletPage() {
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Commission History</h2>
         <div className="space-y-2">
-          {commissionHistory?.map((commission: any) => (
+          {commissionHistory?.map((commission: Commission) => (
             <div key={commission.id} className="flex justify-between items-center border-b pb-2">
               <div>
                 <div className="text-sm text-gray-600">Order: {commission.orderId.substring(0, 8)}</div>
@@ -136,17 +137,16 @@ export default function WalletPage() {
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Withdrawal Requests</h2>
         <div className="space-y-2">
-          {withdrawals?.map((withdrawal: any) => (
+          {withdrawals?.map((withdrawal: Withdrawal) => (
             <div key={withdrawal.id} className="flex justify-between items-center border-b pb-2">
               <div>
                 <div className="text-sm font-medium text-gray-900">${withdrawal.amount.toFixed(2)}</div>
                 <div className="text-xs text-gray-500">{new Date(withdrawal.createdAt).toLocaleDateString()}</div>
               </div>
-              <span className={`px-2 py-1 text-xs rounded-full ${
-                withdrawal.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+              <span className={`px-2 py-1 text-xs rounded-full ${withdrawal.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                 withdrawal.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                'bg-red-100 text-red-800'
-              }`}>
+                  'bg-red-100 text-red-800'
+                }`}>
                 {withdrawal.status}
               </span>
             </div>

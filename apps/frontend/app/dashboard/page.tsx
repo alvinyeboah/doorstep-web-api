@@ -3,69 +3,72 @@
 import { useSession } from '@/lib/auth-client';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 
+import { User } from '@/types';
+
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const { data: stats } = useDashboardStats(session?.user.role);
+  const user = session?.user as unknown as User;
+  const { data: stats } = useDashboardStats(user?.role);
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-900">
-        Welcome, {session?.user.name}!
+        Welcome, {user?.name}!
       </h1>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {session?.user.role === 'VENDOR' && stats && (
+        {user?.role === 'VENDOR' && stats && (
           <>
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="text-sm font-medium text-gray-500">Total Orders</div>
               <div className="mt-2 text-3xl font-semibold text-gray-900">
-                {stats.totalOrders || 0}
+                {(stats as any).totalOrders || 0}
               </div>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="text-sm font-medium text-gray-500">Total Revenue</div>
               <div className="mt-2 text-3xl font-semibold text-gray-900">
-                ${stats.totalRevenue?.toFixed(2) || '0.00'}
+                ${(stats as any).totalRevenue?.toFixed(2) || '0.00'}
               </div>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="text-sm font-medium text-gray-500">Total Products</div>
               <div className="mt-2 text-3xl font-semibold text-gray-900">
-                {stats.totalProducts || 0}
+                {(stats as any).totalProducts || 0}
               </div>
             </div>
           </>
         )}
 
-        {session?.user.role === 'STEPPER' && stats && (
+        {user?.role === 'STEPPER' && stats && (
           <>
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="text-sm font-medium text-gray-500">Wallet Balance</div>
               <div className="mt-2 text-3xl font-semibold text-gray-900">
-                ${stats.balance?.toFixed(2) || '0.00'}
+                ${(stats as any).balance?.toFixed(2) || '0.00'}
               </div>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="text-sm font-medium text-gray-500">Total Earned</div>
               <div className="mt-2 text-3xl font-semibold text-gray-900">
-                ${stats.totalEarned?.toFixed(2) || '0.00'}
+                ${(stats as any).totalEarned?.toFixed(2) || '0.00'}
               </div>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="text-sm font-medium text-gray-500">Deposit Amount</div>
               <div className="mt-2 text-3xl font-semibold text-gray-900">
-                ${stats.depositAmount?.toFixed(2) || '0.00'}
+                ${(stats as any).depositAmount?.toFixed(2) || '0.00'}
               </div>
             </div>
           </>
         )}
 
-        {session?.user.role === 'CUSTOMER' && stats && (
+        {user?.role === 'CUSTOMER' && stats && (
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="text-sm font-medium text-gray-500">Total Orders</div>
             <div className="mt-2 text-3xl font-semibold text-gray-900">
-              {stats.totalOrders || 0}
+              {(stats as any).totalOrders || 0}
             </div>
           </div>
         )}
@@ -75,7 +78,7 @@ export default function DashboardPage() {
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {session?.user.role === 'VENDOR' && (
+          {user?.role === 'VENDOR' && (
             <>
               <a
                 href="/dashboard/products"
@@ -94,7 +97,7 @@ export default function DashboardPage() {
             </>
           )}
 
-          {session?.user.role === 'STEPPER' && (
+          {user?.role === 'STEPPER' && (
             <>
               <a
                 href="/dashboard/orders"
@@ -113,7 +116,7 @@ export default function DashboardPage() {
             </>
           )}
 
-          {session?.user.role === 'CUSTOMER' && (
+          {user?.role === 'CUSTOMER' && (
             <a
               href="/dashboard/orders"
               className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50"

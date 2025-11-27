@@ -6,6 +6,6 @@ import { auth } from '../lib/auth';
 export class AuthController {
   @All('*')
   async handleAuth(@Req() req: Request, @Res() res: Response) {
-    return auth.handler(req);
+    return auth.handler(req as any);
   }
 }

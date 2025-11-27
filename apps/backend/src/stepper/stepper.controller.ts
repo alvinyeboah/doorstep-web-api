@@ -79,7 +79,10 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Post('withdrawal')
-  async requestWithdrawal(@CurrentUser() user: any, @Body() dto: WithdrawalRequestDto) {
+  async requestWithdrawal(
+    @CurrentUser() user: any,
+    @Body() dto: WithdrawalRequestDto,
+  ) {
     return this.stepperService.requestWithdrawal(user.id, dto);
   }
 

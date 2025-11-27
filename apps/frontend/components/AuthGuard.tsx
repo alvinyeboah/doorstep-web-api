@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
+
+import { User } from '@/types';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -13,7 +15,6 @@ interface AuthGuardProps {
 export function AuthGuard({ children, allowedRoles, redirectTo = '/login' }: AuthGuardProps) {
   const router = useRouter();
   const { data: session, isPending } = useSession();
-  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     if (isPending) return;
@@ -25,16 +26,14 @@ export function AuthGuard({ children, allowedRoles, redirectTo = '/login' }: Aut
     }
 
     // Check role authorization if roles specified
-    if (allowedRoles && !allowedRoles.includes(session.user.role)) {
+    if (allowedRoles && !allowedRoles.includes((session.user as unknown as User).role)) {
       router.replace('/dashboard');
       return;
     }
-
-    setIsAuthorized(true);
   }, [session, isPending, router, redirectTo, allowedRoles]);
 
   // Show nothing while checking auth (prevents flash)
-  if (isPending || !isAuthorized) {
+  if (isPending || !session || (allowedRoles && !allowedRoles.includes((session?.user as unknown as User)?.role))) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">

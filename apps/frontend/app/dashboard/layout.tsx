@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useSession, signOut } from '@/lib/auth-client';
 import Link from 'next/link';
 import { AuthGuard } from '@/components/AuthGuard';
+import { User } from '@/types';
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -15,7 +16,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   };
 
   const getNavLinks = () => {
-    const role = session.user.role;
+    if (!session) return [];
+    const role = (session.user as unknown as User).role;
 
     if (role === 'SUPER_ADMIN') {
       return [
@@ -80,7 +82,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             <div className="flex items-center space-x-4">
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">{session.user.name}</p>
-                <p className="text-xs text-gray-500 capitalize">{session.user.role.toLowerCase()}</p>
+                <p className="text-xs text-gray-500 capitalize">{(session.user as unknown as User).role.toLowerCase()}</p>
               </div>
               <button
                 onClick={handleSignOut}

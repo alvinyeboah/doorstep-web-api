@@ -12,14 +12,25 @@ export interface UploadFileResult {
 export class UploadService {
   private readonly logger = new Logger(UploadService.name);
   private readonly maxFileSize: number;
-  private readonly allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  private readonly allowedDocumentTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+  private readonly allowedImageTypes = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+  ];
+  private readonly allowedDocumentTypes = [
+    'application/pdf',
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+  ];
 
   constructor(
     private readonly r2Service: R2Service,
     private readonly configService: ConfigService,
   ) {
-    this.maxFileSize = this.configService.get<number>('MAX_FILE_SIZE') || 5242880; // 5MB default
+    this.maxFileSize =
+      this.configService.get<number>('MAX_FILE_SIZE') || 5242880; // 5MB default
   }
 
   /**
@@ -42,7 +53,9 @@ export class UploadService {
     );
 
     if (!result.success || !result.url) {
-      throw new BadRequestException(result.error || 'Failed to upload product image');
+      throw new BadRequestException(
+        result.error || 'Failed to upload product image',
+      );
     }
 
     return {
@@ -69,7 +82,9 @@ export class UploadService {
     );
 
     if (!result.success || !result.url) {
-      throw new BadRequestException(result.error || 'Failed to upload vendor logo');
+      throw new BadRequestException(
+        result.error || 'Failed to upload vendor logo',
+      );
     }
 
     return {
@@ -96,7 +111,9 @@ export class UploadService {
     );
 
     if (!result.success || !result.url) {
-      throw new BadRequestException(result.error || 'Failed to upload user avatar');
+      throw new BadRequestException(
+        result.error || 'Failed to upload user avatar',
+      );
     }
 
     return {
@@ -125,7 +142,9 @@ export class UploadService {
     );
 
     if (!result.success || !result.url) {
-      throw new BadRequestException(result.error || 'Failed to upload stepper document');
+      throw new BadRequestException(
+        result.error || 'Failed to upload stepper document',
+      );
     }
 
     return {
@@ -152,7 +171,9 @@ export class UploadService {
     );
 
     if (!result.success || !result.url) {
-      throw new BadRequestException(result.error || 'Failed to upload order receipt');
+      throw new BadRequestException(
+        result.error || 'Failed to upload order receipt',
+      );
     }
 
     return {

@@ -25,7 +25,8 @@ export class SuperAdminController {
 
   @Get('vendors')
   async getAllVendors(@Query('verified') verified?: string) {
-    const verifiedBool = verified === 'true' ? true : verified === 'false' ? false : undefined;
+    const verifiedBool =
+      verified === 'true' ? true : verified === 'false' ? false : undefined;
     return this.superAdminService.getAllVendors(verifiedBool);
   }
 
@@ -47,7 +48,10 @@ export class SuperAdminController {
     @Query('status') status?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.superAdminService.getAllOrders(status, limit ? parseInt(limit) : 100);
+    return this.superAdminService.getAllOrders(
+      status,
+      limit ? parseInt(limit) : 100,
+    );
   }
 
   @Get('revenue/by-vendor')

@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useSession } from '@/lib/auth-client';
-import { useOrders, useUpdateOrderStatus, useAcceptOrder } from '@/hooks/useOrders';
-import { OrderStatus } from '@/types';
+import { useOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
+import { OrderStatus, Order, User } from '@/types';
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   PLACED: 'bg-yellow-100 text-yellow-800',
@@ -18,11 +18,11 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 
 export default function OrdersPage() {
   const { data: session } = useSession();
+  const user = session?.user as unknown as User;
   const [statusFilter, setStatusFilter] = useState('');
 
-  const { data: orders, isLoading } = useOrders(session?.user.role, statusFilter);
+  const { data: orders, isLoading } = useOrders(user?.role, statusFilter);
   const updateStatusMutation = useUpdateOrderStatus();
-  const acceptOrderMutation = useAcceptOrder();
 
   const handleStatusUpdate = (orderId: string, status: string) => {
     updateStatusMutation.mutate({ orderId, status });
@@ -75,7 +75,7 @@ export default function OrdersPage() {
 
       {/* Orders List */}
       <div className="space-y-4">
-        {orders?.map((order: any) => (
+        {orders?.map((order: Order) => (
           <div key={order.id} className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -92,7 +92,7 @@ export default function OrdersPage() {
             </div>
 
             {/* Customer/Vendor Info */}
-            {session?.user.role === 'VENDOR' && order.customer && (
+            {user?.role === 'VENDOR' && order.customer && (
               <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium text-gray-700">Customer:</p>
                 <p className="text-sm text-gray-900">{order.customer.user.name}</p>
@@ -105,7 +105,7 @@ export default function OrdersPage() {
               </div>
             )}
 
-            {session?.user.role === 'CUSTOMER' && order.vendor && (
+            {user?.role === 'CUSTOMER' && order.vendor && (
               <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium text-gray-700">Vendor:</p>
                 <p className="text-sm text-gray-900">{order.vendor.shopName}</p>
@@ -113,7 +113,7 @@ export default function OrdersPage() {
               </div>
             )}
 
-            {session?.user.role === 'STEPPER' && (
+            {user?.role === 'STEPPER' && (
               <div className="mb-4 p-3 bg-gray-50 rounded-lg grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-700">Pickup:</p>
@@ -132,7 +132,7 @@ export default function OrdersPage() {
             <div className="mb-4">
               <p className="text-sm font-medium text-gray-700 mb-2">Items:</p>
               <div className="space-y-1">
-                {order.items?.map((item: any) => (
+                {order.items?.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <span className="text-gray-900">
                       {item.quantity}x {item.product.name}
@@ -148,9 +148,9 @@ export default function OrdersPage() {
             </div>
 
             {/* Actions */}
-            {getAvailableStatuses(order.status, session?.user.role || '').length > 0 && (
+            {getAvailableStatuses(order.status, user?.role || '').length > 0 && (
               <div className="flex space-x-2">
-                {getAvailableStatuses(order.status, session?.user.role || '').map((status) => (
+                {getAvailableStatuses(order.status, user?.role || '').map((status) => (
                   <button
                     key={status}
                     onClick={() => handleStatusUpdate(order.id, status)}

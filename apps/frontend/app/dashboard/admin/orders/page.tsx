@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAdminOrders } from '@/hooks/useAdminOrders';
-import { OrderStatus } from '@/types';
+import { OrderStatus, Order } from '@/types';
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   PLACED: 'bg-yellow-100 text-yellow-800',
@@ -51,7 +51,7 @@ export default function AdminOrdersPage() {
 
       {/* Orders List */}
       <div className="space-y-4">
-        {orders?.map((order: any) => (
+        {orders?.map((order: Order) => (
           <div key={order.id} className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -97,7 +97,7 @@ export default function AdminOrdersPage() {
             <div className="mb-4">
               <p className="text-sm font-medium text-gray-700 mb-2">Items:</p>
               <div className="space-y-1">
-                {order.items?.map((item: any) => (
+                {order.items?.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <span className="text-gray-900">
                       {item.quantity}x {item.product.name}

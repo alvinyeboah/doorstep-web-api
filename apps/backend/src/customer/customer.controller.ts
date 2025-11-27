@@ -35,7 +35,10 @@ export class CustomerController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('CUSTOMER')
   @Put('profile')
-  async updateProfile(@CurrentUser() user: any, @Body() dto: UpdateCustomerDto) {
+  async updateProfile(
+    @CurrentUser() user: any,
+    @Body() dto: UpdateCustomerDto,
+  ) {
     return this.customerService.updateProfile(user.id, dto);
   }
 

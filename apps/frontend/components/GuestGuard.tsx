@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 
@@ -12,7 +12,6 @@ interface GuestGuardProps {
 export function GuestGuard({ children, redirectTo = '/dashboard' }: GuestGuardProps) {
   const router = useRouter();
   const { data: session, isPending } = useSession();
-  const [canRender, setCanRender] = useState(false);
 
   useEffect(() => {
     if (isPending) return;
@@ -22,12 +21,10 @@ export function GuestGuard({ children, redirectTo = '/dashboard' }: GuestGuardPr
       router.replace(redirectTo);
       return;
     }
-
-    setCanRender(true);
   }, [session, isPending, router, redirectTo]);
 
   // Show loading while checking auth (prevents flash)
-  if (isPending || !canRender) {
+  if (isPending || session) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">

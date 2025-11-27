@@ -2,6 +2,7 @@
 
 import { useAvailableOrders } from '@/hooks/useAvailableOrders';
 import { useAcceptOrder } from '@/hooks/useOrders';
+import { Order } from '@/types';
 
 export default function AvailableOrdersPage() {
   const { data: orders, isLoading } = useAvailableOrders(10000); // Refresh every 10 seconds
@@ -21,7 +22,7 @@ export default function AvailableOrdersPage() {
       </div>
 
       <div className="space-y-4">
-        {orders?.map((order: any) => (
+        {orders?.map((order: Order) => (
           <div key={order.id} className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -46,9 +47,7 @@ export default function AvailableOrdersPage() {
               <div className="p-3 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium text-gray-700 mb-1">Delivery Location:</p>
                 <p className="text-sm text-gray-900">{order.customer.hall || 'Address provided'}</p>
-                {order.customer.address && (
-                  <p className="text-sm text-gray-600">{order.customer.address}</p>
-                )}
+
               </div>
             </div>
 

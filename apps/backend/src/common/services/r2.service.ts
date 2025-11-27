@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  ListObjectsV2Command,
+} from '@aws-sdk/client-s3';
 
 import { getErrorMessage } from '../../shared/utils/error.util';
 
@@ -27,19 +33,26 @@ export class R2Service {
   private readonly accountId: string;
 
   constructor(private configService: ConfigService) {
-    this.accountId = this.configService.get<string>('CLOUDFLARE_ACCOUNT_ID') || '';
+    this.accountId =
+      this.configService.get<string>('CLOUDFLARE_ACCOUNT_ID') || '';
     this.bucketName = this.configService.get<string>('R2_BUCKET_NAME') || '';
 
-    const accessKeyId = this.configService.get<string>('CLOUDFLARE_ACCESS_KEY') || '';
-    const secretAccessKey = this.configService.get<string>('CLOUDFLARE_SECRET_KEY') || '';
+    const accessKeyId =
+      this.configService.get<string>('CLOUDFLARE_ACCESS_KEY') || '';
+    const secretAccessKey =
+      this.configService.get<string>('CLOUDFLARE_SECRET_KEY') || '';
 
     if (!this.accountId || !accessKeyId || !secretAccessKey) {
-      this.logger.warn('Cloudflare R2 configuration is missing - service will be disabled');
+      this.logger.warn(
+        'Cloudflare R2 configuration is missing - service will be disabled',
+      );
     }
 
     this.s3Client = new S3Client({
       region: 'auto',
-      endpoint: this.configService.get<string>('CLOUDFLARE_R2_URL') || `https://${this.accountId}.r2.cloudflarestorage.com`,
+      endpoint:
+        this.configService.get<string>('CLOUDFLARE_R2_URL') ||
+        `https://${this.accountId}.r2.cloudflarestorage.com`,
       credentials: {
         accessKeyId: accessKeyId,
         secretAccessKey: secretAccessKey,
@@ -68,7 +81,9 @@ export class R2Service {
 
       await this.s3Client.send(command);
 
-      const assetsBaseUrl = this.configService.get<string>('ASSETS_PUBLIC_BASE_URL') || `https://${this.bucketName}.${this.accountId}.r2.cloudflarestorage.com`;
+      const assetsBaseUrl =
+        this.configService.get<string>('ASSETS_PUBLIC_BASE_URL') ||
+        `https://${this.bucketName}.${this.accountId}.r2.cloudflarestorage.com`;
       const url = `${assetsBaseUrl}/${options.key}`;
 
       this.logger.log(`File uploaded successfully: ${options.key}`);
@@ -146,21 +161,27 @@ export class R2Service {
       });
 
       const response = await this.s3Client.send(command);
-      return response.Contents?.map(obj => obj.Key || '') || [];
+      return response.Contents?.map((obj: any) => obj.Key || '') || [];
     } catch (error) {
       this.logger.error('R2 list files failed:', error);
       return [];
     }
   }
 
-  async getSignedUrl(bucket: string, key: string, expiresIn: number = 3600): Promise<string> {
+  async getSignedUrl(
+    bucket: string,
+    key: string,
+    expiresIn: number = 3600,
+  ): Promise<string> {
     try {
       if (!this.accountId) {
         throw new Error('R2 service is not configured');
       }
 
       // Use the public CDN URL instead of signed URLs since the bucket is public
-      const assetsBaseUrl = this.configService.get<string>('ASSETS_PUBLIC_BASE_URL') || `https://${this.bucketName}.${this.accountId}.r2.cloudflarestorage.com`;
+      const assetsBaseUrl =
+        this.configService.get<string>('ASSETS_PUBLIC_BASE_URL') ||
+        `https://${this.bucketName}.${this.accountId}.r2.cloudflarestorage.com`;
       return `${assetsBaseUrl}/${key}`;
     } catch (error) {
       this.logger.error('R2 get signed URL failed:', error);
@@ -177,7 +198,7 @@ export class R2Service {
     productSlug: string,
     imageBuffer: Buffer,
     filename: string,
-    contentType: string = 'image/jpeg'
+    contentType: string = 'image/jpeg',
   ): Promise<UploadResponse> {
     const key = `products/${vendorSlug}/${productSlug}/${filename}`;
 
@@ -202,7 +223,7 @@ export class R2Service {
     vendorSlug: string,
     imageBuffer: Buffer,
     filename: string,
-    contentType: string = 'image/jpeg'
+    contentType: string = 'image/jpeg',
   ): Promise<UploadResponse> {
     const key = `vendors/${vendorSlug}/logo/${filename}`;
 
@@ -226,7 +247,7 @@ export class R2Service {
     userId: string,
     imageBuffer: Buffer,
     filename: string,
-    contentType: string = 'image/jpeg'
+    contentType: string = 'image/jpeg',
   ): Promise<UploadResponse> {
     const key = `users/${userId}/avatar/${filename}`;
 
@@ -251,7 +272,7 @@ export class R2Service {
     documentType: string,
     documentBuffer: Buffer,
     filename: string,
-    contentType: string
+    contentType: string,
   ): Promise<UploadResponse> {
     const key = `steppers/${userId}/documents/${documentType}/${filename}`;
 
@@ -276,7 +297,7 @@ export class R2Service {
     orderId: string,
     receiptBuffer: Buffer,
     filename: string,
-    contentType: string = 'image/jpeg'
+    contentType: string = 'image/jpeg',
   ): Promise<UploadResponse> {
     const key = `orders/${orderId}/receipts/${filename}`;
 

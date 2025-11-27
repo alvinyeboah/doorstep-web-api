@@ -47,20 +47,27 @@ export class PlunkService {
       }
 
       this.logger.debug(`[PlunkService] Sending email to: ${sendUrl}`);
-      this.logger.debug(`[PlunkService] Request data:`, JSON.stringify({
-        to: data.to,
-        subject: data.subject,
-        bodyLength: data.body.length,
-        from: data.from,
-        name: data.name,
-        subscribed: data.subscribed
-      }, null, 2));
+      this.logger.debug(
+        `[PlunkService] Request data:`,
+        JSON.stringify(
+          {
+            to: data.to,
+            subject: data.subject,
+            bodyLength: data.body.length,
+            from: data.from,
+            name: data.name,
+            subscribed: data.subscribed,
+          },
+          null,
+          2,
+        ),
+      );
 
       const response = await fetch(sendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify(data),
       });
@@ -70,13 +77,16 @@ export class PlunkService {
         this.logger.error(`[PlunkService] HTTP Error:`, {
           status: response.status,
           statusText: response.statusText,
-          body: errorText
+          body: errorText,
         });
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const responseData = await response.json();
-      this.logger.debug(`[PlunkService] Response:`, JSON.stringify(responseData, null, 2));
+      this.logger.debug(
+        `[PlunkService] Response:`,
+        JSON.stringify(responseData, null, 2),
+      );
 
       return responseData;
     } catch (error) {

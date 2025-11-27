@@ -1,6 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterStepperDto, UpdateStepperDto, DepositDto, WithdrawalRequestDto } from './dto/stepper.dto';
+import {
+  RegisterStepperDto,
+  UpdateStepperDto,
+  DepositDto,
+  WithdrawalRequestDto,
+} from './dto/stepper.dto';
 
 @Injectable()
 export class StepperService {
@@ -10,6 +20,10 @@ export class StepperService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     if (user.role !== 'STEPPER') {
       throw new ForbiddenException('Only steppers can register as steppers');
@@ -226,7 +240,9 @@ export class StepperService {
       throw new BadRequestException('Insufficient balance');
     }
 
-    const twoFactorCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const twoFactorCode = Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString();
 
     const request = await this.prisma.withdrawalRequest.create({
       data: {

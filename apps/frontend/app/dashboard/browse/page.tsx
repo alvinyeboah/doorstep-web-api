@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useVendors } from '@/hooks/useVendors';
+import Image from 'next/image';
+import { Vendor } from '@/types';
 
 export default function BrowseVendorsPage() {
   const router = useRouter();
@@ -28,18 +30,21 @@ export default function BrowseVendorsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {vendors?.map((vendor: any) => (
+        {vendors?.map((vendor: Vendor) => (
           <div
             key={vendor.id}
             onClick={() => router.push(`/dashboard/vendor/${vendor.id}`)}
             className="bg-white rounded-lg shadow hover:shadow-lg transition cursor-pointer"
           >
             {vendor.logoUrl && (
-              <img
-                src={vendor.logoUrl}
-                alt={vendor.shopName}
-                className="w-full h-48 object-cover rounded-t-lg"
-              />
+              <div className="relative w-full h-48">
+                <Image
+                  src={vendor.logoUrl}
+                  alt={vendor.shopName}
+                  fill
+                  className="object-cover rounded-t-lg"
+                />
+              </div>
             )}
             <div className="p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-2">

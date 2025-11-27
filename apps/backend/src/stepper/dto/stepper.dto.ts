@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsNotEmpty, IsObject, IsNumber, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNotEmpty,
+  IsObject,
+  IsNumber,
+  Min,
+} from 'class-validator';
 
 export class RegisterStepperDto {
   @IsString()

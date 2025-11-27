@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
@@ -12,7 +16,9 @@ export class ProductsService {
     });
 
     if (!vendor) {
-      throw new NotFoundException('Vendor profile not found. Please register as a vendor first.');
+      throw new NotFoundException(
+        'Vendor profile not found. Please register as a vendor first.',
+      );
     }
 
     const product = await this.prisma.product.create({
