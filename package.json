@@ -15,11 +15,17 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test"
   },
-  "keywords": ["monorepo", "nestjs", "nextjs", "food-delivery"],
+  "keywords": [
+    "monorepo",
+    "nestjs",
+    "nextjs",
+    "food-delivery"
+  ],
   "author": "Alvin Yeboah",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
-  }
+  },
+  "packageManager": "pnpm@9.15.4"
 }
