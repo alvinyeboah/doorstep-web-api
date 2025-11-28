@@ -7,7 +7,10 @@ FROM base AS build
 COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm run -r build
+# Generate Prisma Client
+RUN pnpm --filter backend exec prisma generate
+# Build only the backend
+RUN pnpm run --filter=backend build
 RUN pnpm deploy --filter=backend --prod /prod/backend
 
 FROM base AS backend
