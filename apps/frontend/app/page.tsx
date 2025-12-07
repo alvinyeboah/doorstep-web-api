@@ -5,7 +5,6 @@ import { GrocerySection } from "@/components/home/grocery-section"
 import { ConvenienceSection } from "@/components/home/convenience-section"
 import { StepPassSection } from "@/components/home/steppass-section"
 import { OpportunitySection } from "@/components/home/opportunity-section"
-import { SiteFooter } from "@/components/site-footer"
 
 export default function HomePage() {
   return (
@@ -17,7 +16,6 @@ export default function HomePage() {
       <ConvenienceSection />
       <StepPassSection />
       <OpportunitySection />
-      <SiteFooter />
     </main>
   )
 }
