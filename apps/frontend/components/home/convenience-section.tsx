@@ -16,7 +16,7 @@ export function ConvenienceSection() {
           </div>
           <div className="relative">
             <img
-              src="/placeholder.svg?height=500&width=600"
+              src="https://images.unsplash.com/photo-1601599561213-832382fd07ba?w=600&h=500&fit=crop&q=80"
               alt="Convenience store delivery"
               className="rounded-lg w-full h-auto object-cover"
             />

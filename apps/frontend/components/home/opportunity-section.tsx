@@ -22,7 +22,7 @@ export function OpportunitySection() {
           </div>
           <div className="relative">
             <img
-              src="/placeholder.svg?height=500&width=600"
+              src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=500&fit=crop&q=80"
               alt="Delivery driver"
               className="rounded-lg w-full h-auto object-cover"
             />
@@ -33,7 +33,7 @@ export function OpportunitySection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="relative order-2 lg:order-1">
             <img
-              src="/placeholder.svg?height=500&width=600"
+              src="https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=600&h=500&fit=crop&q=80"
               alt="Restaurant partner"
               className="rounded-lg w-full h-auto object-cover"
             />

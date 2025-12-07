@@ -5,13 +5,13 @@ const giftCards = [
     title: "Beauty essentials from top brands",
     description: "Get all your beauty and self-care needs delivered at home or on-the-go",
     cta: "Shop beauty",
-    image: "/placeholder.svg?height=400&width=500",
+    image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&h=400&fit=crop&q=80",
   },
   {
     title: "Flowers for any occasion",
     description: "Shop hand-picked and thoughtfully-arranged blooms from florists near you.",
     cta: "Send Flowers",
-    image: "/placeholder.svg?height=400&width=500",
+    image: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=500&h=400&fit=crop&q=80",
   },
 ]
 

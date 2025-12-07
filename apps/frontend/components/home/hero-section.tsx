@@ -16,12 +16,12 @@ export function HeroSection() {
       {/* Background food images */}
       <div className="absolute inset-0">
         <img
-          src="/placeholder.svg?height=600&width=400"
+          src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=600&fit=crop&q=80"
           alt=""
           className="absolute left-0 top-0 h-full w-1/4 object-cover opacity-90"
         />
         <img
-          src="/placeholder.svg?height=600&width=400"
+          src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=600&fit=crop&q=80"
           alt=""
           className="absolute right-0 top-0 h-full w-1/4 object-cover opacity-90"
         />
