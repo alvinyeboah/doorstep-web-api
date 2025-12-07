@@ -7,7 +7,7 @@ export function StepPassSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="relative">
             <img
-              src="/placeholder.svg?height=500&width=600"
+              src="https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=600&h=500&fit=crop&q=80"
               alt="Food spread on table"
               className="rounded-lg w-full h-auto object-cover"
             />

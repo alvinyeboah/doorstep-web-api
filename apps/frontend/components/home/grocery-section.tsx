@@ -4,7 +4,7 @@ export function GrocerySection() {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url('/placeholder.svg?height=600&width=1600')`,
+          backgroundImage: `url('https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?w=1600&h=600&fit=crop&q=80')`,
         }}
       >
         <div className="absolute inset-0 bg-black/50" />

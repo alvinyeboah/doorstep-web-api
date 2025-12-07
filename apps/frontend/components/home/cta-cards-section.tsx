@@ -7,21 +7,21 @@ const cards = [
     description: "As a delivery driver, make money and work on your schedule. Sign up in minutes.",
     cta: "Start earning",
     href: "/stepper",
-    image: "/placeholder.svg?height=120&width=120",
+    image: "https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=120&h=120&fit=crop&q=80",
   },
   {
     title: "Become a Merchant",
     description: "Attract new customers and grow sales, starting with 0% commissions for up to 30 days.",
     cta: "Sign up for DoorStep",
     href: "/merchant",
-    image: "/placeholder.svg?height=120&width=120",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=120&h=120&fit=crop&q=80",
   },
   {
     title: "Get the best DoorStep experience",
     description: "Experience the best your campus has to offer, all in one app.",
     cta: "Get the app",
     href: "/app",
-    image: "/placeholder.svg?height=120&width=120",
+    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=120&h=120&fit=crop&q=80",
   },
 ]
 

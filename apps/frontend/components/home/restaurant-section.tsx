@@ -18,7 +18,7 @@ export function RestaurantSection() {
           </div>
           <div className="relative">
             <img
-              src="/placeholder.svg?height=500&width=600"
+              src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=500&fit=crop&q=80"
               alt="People enjoying food at a picnic"
               className="rounded-lg w-full h-auto object-cover"
             />
