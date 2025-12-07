@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MapPin, ArrowRight, User } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SiteHeader } from "@/components/site-header"
@@ -10,99 +10,81 @@ export function HeroSection() {
   const [address, setAddress] = useState("")
 
   return (
-    <section className="relative min-h-[600px] bg-primary overflow-hidden">
+    <section className="relative min-h-[700px] bg-gradient-to-br from-amber-50 via-white to-blue-50 overflow-hidden">
       <SiteHeader />
 
-      {/* Background food images */}
-      <div className="absolute inset-0">
-        <img
-          src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=600&fit=crop&q=80"
-          alt=""
-          className="absolute left-0 top-0 h-full w-1/4 object-cover opacity-90"
-        />
-        <img
-          src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=600&fit=crop&q=80"
-          alt=""
-          className="absolute right-0 top-0 h-full w-1/4 object-cover opacity-90"
-        />
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[600px] px-6 pt-20">
-        {/* Phone mockup */}
-        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 hidden lg:block">
-          <div className="relative">
-            <div className="w-48 h-96 bg-foreground rounded-3xl p-2 shadow-2xl">
-              <div className="w-full h-full bg-primary rounded-2xl flex flex-col items-center justify-center gap-4 p-4">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" className="h-6 w-6 text-primary" fill="currentColor">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                  </svg>
+      <div className="relative z-10 flex items-center justify-center min-h-[700px] px-6">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center w-full">
+          {/* Left content */}
+          <div className="text-left space-y-8">
+            <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
+              <span className="text-sm font-semibold text-primary">Campus Food Delivery</span>
+            </div>
+
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight">
+              Everything you crave,
+              <span className="block text-primary">delivered.</span>
+            </h1>
+
+            <p className="text-xl text-muted-foreground max-w-lg">
+              Your favorite campus restaurants and stores, delivered right to your dorm in minutes.
+            </p>
+
+            {/* Address input */}
+            <div className="max-w-lg">
+              <div className="flex items-center gap-2 bg-white rounded-2xl p-2 shadow-lg border border-gray-100">
+                <Input
+                  type="text"
+                  placeholder="Enter your delivery address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground placeholder:text-muted-foreground text-base px-4"
+                />
+                <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 h-12 font-semibold whitespace-nowrap">
+                  Find Food
+                </Button>
+              </div>
+              <Link href="/login" className="inline-block mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Sign in for saved addresses
+              </Link>
+            </div>
+          </div>
+
+          {/* Right image */}
+          <div className="relative hidden lg:block">
+            <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+              <img
+                src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=500&fit=crop&q=90"
+                alt="Delicious food"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            </div>
+
+            {/* Floating card */}
+            <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-6 max-w-xs">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-xl overflow-hidden">
+                  <img
+                    src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100&h=100&fit=crop&q=80"
+                    alt="Restaurant"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                  <svg className="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 3h18v18H3zM3 9h18M9 21V9"
-                    />
-                  </svg>
-                </div>
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                  <svg className="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                    />
-                  </svg>
-                </div>
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                  <svg className="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                    />
-                  </svg>
+                <div className="flex-1">
+                  <div className="font-semibold text-foreground">Campus Eats</div>
+                  <div className="text-sm text-muted-foreground">15-20 min • $0 delivery</div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Main content */}
-        <div className="text-center max-w-2xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
-            $0 DELIVERY FEE ON FIRST ORDER
-          </h1>
-          <p className="text-white/80 text-sm mb-8">Other fees apply</p>
-
-          {/* Address input */}
-          <div className="relative max-w-md mx-auto mb-4">
-            <div className="flex items-center bg-white rounded-full overflow-hidden shadow-lg">
-              <MapPin className="h-5 w-5 text-muted-foreground ml-4" />
-              <Input
-                type="text"
-                placeholder="Enter delivery address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground placeholder:text-muted-foreground"
-              />
-              <Button size="icon" className="rounded-full bg-primary hover:bg-primary/90 m-1 h-10 w-10">
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Sign in link */}
-          <Button variant="outline" className="bg-white text-foreground hover:bg-white/90 rounded-full px-6">
-            <User className="h-4 w-4 mr-2" />
-            Sign in for saved address
-          </Button>
         </div>
       </div>
     </section>
