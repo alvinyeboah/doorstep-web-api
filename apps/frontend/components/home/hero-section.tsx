@@ -4,14 +4,12 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { SiteHeader } from "@/components/site-header"
 
 export function HeroSection() {
   const [address, setAddress] = useState("")
 
   return (
-    <section className="relative min-h-[700px] bg-gradient-to-br from-amber-50 via-white to-blue-50 overflow-hidden">
-      <SiteHeader />
+    <section className="relative min-h-[700px] bg-gradient-to-br from-amber-50 via-white to-blue-50 overflow-hidden pt-20">
 
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden">
