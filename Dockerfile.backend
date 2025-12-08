@@ -28,22 +28,26 @@ RUN pnpm run build
 
 # Stage 4: Production
 FROM base AS backend
-WORKDIR /prod/backend
+WORKDIR /prod
 ENV NODE_ENV=production
 
-# Copy node_modules with generated Prisma client
-COPY --from=deps /app/node_modules /prod/node_modules
-COPY --from=deps /app/apps/backend/node_modules /prod/backend/node_modules
+# Copy node_modules with generated Prisma client from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/backend/node_modules ./backend/node_modules
+COPY --from=deps /app/apps/backend/prisma ./backend/prisma
 
 # Copy built application
-COPY --from=builder /app/apps/backend/dist ./dist
-COPY --from=builder /app/apps/backend/package.json ./package.json
-COPY --from=builder /app/apps/backend/prisma ./prisma
+COPY --from=builder /app/apps/backend/dist ./backend/dist
+COPY --from=builder /app/apps/backend/package.json ./backend/package.json
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 
 # Create non-root user for security
 RUN adduser -D -u 1001 nestjs && chown -R nestjs /prod
 
 USER nestjs
+
+WORKDIR /prod/backend
 
 EXPOSE 3000
 
