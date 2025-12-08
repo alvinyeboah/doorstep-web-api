@@ -26,6 +26,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('steppers')
 @Controller('stepper')
@@ -157,7 +158,7 @@ export class StepperController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get stepper orders',
-    description: 'Stepper retrieves their delivery orders with optional status filter',
+    description: 'Stepper retrieves their delivery orders with optional status filter and pagination',
   })
   @ApiQuery({
     name: 'status',
@@ -165,9 +166,21 @@ export class StepperController {
     example: 'OUT_FOR_DELIVERY',
     required: false,
   })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number (1-based)',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
   @ApiResponse({
     status: 200,
-    description: 'Orders retrieved successfully',
+    description: 'Orders retrieved successfully with pagination',
   })
   @ApiResponse({
     status: 401,
@@ -177,8 +190,8 @@ export class StepperController {
     status: 403,
     description: 'Forbidden - stepper role required',
   })
-  async getOrders(@CurrentUser() user: any, @Query('status') status?: string) {
-    return this.stepperService.getOrders(user.id, status);
+  async getOrders(@CurrentUser() user: any, @Query() pagination: PaginationDto, @Query('status') status?: string) {
+    return this.stepperService.getOrders(user.id, status, pagination.page, pagination.limit);
   }
 
   @UseGuards(AuthGuard, RolesGuard)

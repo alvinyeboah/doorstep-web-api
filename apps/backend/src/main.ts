@@ -44,14 +44,16 @@ async function bootstrap() {
     .setTitle('DoorStep API')
     .setDescription('Campus food delivery platform API documentation')
     .setVersion('1.0.0')
+    .addServer('http://localhost:3000', 'Local development')
+    .addServer('https://api.doorstepgh.com', 'Production server')
     .addBearerAuth()
     .addTag('auth', 'Authentication endpoints')
-    .addTag('users', 'User management')
     .addTag('products', 'Product management')
     .addTag('orders', 'Order management')
     .addTag('vendors', 'Vendor management')
     .addTag('steppers', 'Delivery steppers')
     .addTag('customers', 'Customer management')
+    .addTag('upload', 'File upload endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

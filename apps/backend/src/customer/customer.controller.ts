@@ -28,6 +28,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('customers')
 @Controller('customer')
@@ -254,7 +255,7 @@ export class CustomerController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get customer orders',
-    description: 'Customer retrieves their order history with optional status filter',
+    description: 'Customer retrieves their order history with optional status filter and pagination',
   })
   @ApiQuery({
     name: 'status',
@@ -262,9 +263,21 @@ export class CustomerController {
     example: 'DELIVERED',
     required: false,
   })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number (1-based)',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
   @ApiResponse({
     status: 200,
-    description: 'Orders retrieved successfully',
+    description: 'Orders retrieved successfully with pagination',
   })
   @ApiResponse({
     status: 401,
@@ -274,8 +287,8 @@ export class CustomerController {
     status: 403,
     description: 'Forbidden - customer role required',
   })
-  async getOrders(@CurrentUser() user: any, @Query('status') status?: string) {
-    return this.customerService.getOrders(user.id, status);
+  async getOrders(@CurrentUser() user: any, @Query() pagination: PaginationDto, @Query('status') status?: string) {
+    return this.customerService.getOrders(user.id, status, pagination.page, pagination.limit);
   }
 
   @UseGuards(AuthGuard, RolesGuard)

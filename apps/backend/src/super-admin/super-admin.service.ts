@@ -204,7 +204,7 @@ export class SuperAdminService {
     });
 
     const revenueData = await Promise.all(
-      vendors.map(async (vendor) => {
+      vendors.map(async (vendor: any) => {
         const revenue = await this.prisma.order.aggregate({
           where: {
             vendorId: vendor.id,

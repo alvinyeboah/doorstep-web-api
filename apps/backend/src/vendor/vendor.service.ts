@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterVendorDto, UpdateVendorDto } from './dto/vendor.dto';
+import { createPaginatedResponse } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class VendorService {
@@ -149,7 +150,7 @@ export class VendorService {
     return vendor;
   }
 
-  async getAllVendors(search?: string) {
+  async getAllVendors(search?: string, page = 1, limit = 20) {
     const where = search
       ? {
           OR: [
@@ -159,29 +160,34 @@ export class VendorService {
         }
       : {};
 
-    const vendors = await this.prisma.vendor.findMany({
-      where,
-      include: {
-        user: {
-          select: {
-            name: true,
+    const [vendors, total] = await Promise.all([
+      this.prisma.vendor.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              products: true,
+            },
           },
         },
-        _count: {
-          select: {
-            products: true,
-          },
+        orderBy: {
+          createdAt: 'desc',
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.vendor.count({ where }),
+    ]);
 
-    return vendors;
+    return createPaginatedResponse(vendors, total, page, limit);
   }
 
-  async getOrders(userId: string, status?: string) {
+  async getOrders(userId: string, status?: string, page = 1, limit = 20) {
     const vendor = await this.prisma.vendor.findUnique({
       where: { userId },
     });
@@ -195,41 +201,46 @@ export class VendorService {
       where.status = status;
     }
 
-    const orders = await this.prisma.order.findMany({
-      where,
-      include: {
-        customer: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                phone: true,
+    const [orders, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where,
+        include: {
+          customer: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  phone: true,
+                },
               },
             },
           },
-        },
-        stepper: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                phone: true,
+          stepper: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  phone: true,
+                },
               },
             },
           },
-        },
-        items: {
-          include: {
-            product: true,
+          items: {
+            include: {
+              product: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.order.count({ where }),
+    ]);
 
-    return orders;
+    return createPaginatedResponse(orders, total, page, limit);
   }
 
   async getAnalytics(userId: string) {
