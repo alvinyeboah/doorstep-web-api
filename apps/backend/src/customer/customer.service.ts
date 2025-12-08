@@ -12,6 +12,7 @@ import {
   UpdateCartItemDto,
   CreateOrderDto,
 } from './dto/customer.dto';
+import { createPaginatedResponse } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class CustomerService {
@@ -251,7 +252,7 @@ export class CustomerService {
   }
 
   // Order Operations
-  async getOrders(userId: string, status?: string) {
+  async getOrders(userId: string, status?: string, page = 1, limit = 20) {
     const customer = await this.prisma.customer.findUnique({
       where: { userId },
     });
@@ -265,38 +266,43 @@ export class CustomerService {
       where.status = status;
     }
 
-    const orders = await this.prisma.order.findMany({
-      where,
-      include: {
-        vendor: {
-          select: {
-            id: true,
-            shopName: true,
-            address: true,
+    const [orders, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where,
+        include: {
+          vendor: {
+            select: {
+              id: true,
+              shopName: true,
+              address: true,
+            },
           },
-        },
-        stepper: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                phone: true,
+          stepper: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  phone: true,
+                },
               },
             },
           },
-        },
-        items: {
-          include: {
-            product: true,
+          items: {
+            include: {
+              product: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.order.count({ where }),
+    ]);
 
-    return orders;
+    return createPaginatedResponse(orders, total, page, limit);
   }
 
   async getOrder(userId: string, orderId: string) {

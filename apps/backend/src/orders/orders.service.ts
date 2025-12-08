@@ -74,9 +74,21 @@ export class OrdersService {
       },
     });
 
+    // Auto-clear cart after successful order creation
+    const cart = await this.prisma.cart.findUnique({
+      where: { customerId: customer.id },
+      include: { items: true },
+    });
+
+    if (cart && cart.items.length > 0) {
+      await this.prisma.cartItem.deleteMany({
+        where: { cartId: cart.id },
+      });
+    }
+
     return {
       order,
-      message: 'Order placed successfully',
+      message: 'Order placed successfully and cart cleared',
     };
   }
 

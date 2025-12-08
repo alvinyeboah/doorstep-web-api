@@ -22,6 +22,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('vendors')
 @Controller('vendor')
@@ -141,7 +142,7 @@ export class VendorController {
   @Get('list')
   @ApiOperation({
     summary: 'Get all vendors',
-    description: 'Retrieve list of all vendors with optional search filter',
+    description: 'Retrieve list of all vendors with optional search filter and pagination',
   })
   @ApiQuery({
     name: 'search',
@@ -149,12 +150,44 @@ export class VendorController {
     example: 'restaurant',
     required: false,
   })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number (1-based)',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
   @ApiResponse({
     status: 200,
-    description: 'Vendors retrieved successfully',
+    description: 'Vendors retrieved successfully with pagination',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number', example: 1 },
+            limit: { type: 'number', example: 20 },
+            total: { type: 'number', example: 45 },
+            totalPages: { type: 'number', example: 3 },
+            hasNextPage: { type: 'boolean', example: true },
+            hasPreviousPage: { type: 'boolean', example: false },
+          },
+        },
+      },
+    },
   })
-  async getAllVendors(@Query('search') search?: string) {
-    return this.vendorService.getAllVendors(search);
+  async getAllVendors(@Query() pagination: PaginationDto, @Query('search') search?: string) {
+    return this.vendorService.getAllVendors(search, pagination.page, pagination.limit);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
@@ -163,7 +196,7 @@ export class VendorController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get vendor orders',
-    description: 'Vendor retrieves their orders with optional status filter',
+    description: 'Vendor retrieves their orders with optional status filter and pagination',
   })
   @ApiQuery({
     name: 'status',
@@ -171,9 +204,21 @@ export class VendorController {
     example: 'PREPARING',
     required: false,
   })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number (1-based)',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
   @ApiResponse({
     status: 200,
-    description: 'Orders retrieved successfully',
+    description: 'Orders retrieved successfully with pagination',
   })
   @ApiResponse({
     status: 401,
@@ -183,8 +228,8 @@ export class VendorController {
     status: 403,
     description: 'Forbidden - vendor role required',
   })
-  async getOrders(@CurrentUser() user: any, @Query('status') status?: string) {
-    return this.vendorService.getOrders(user.id, status);
+  async getOrders(@CurrentUser() user: any, @Query() pagination: PaginationDto, @Query('status') status?: string) {
+    return this.vendorService.getOrders(user.id, status, pagination.page, pagination.limit);
   }
 
   @UseGuards(AuthGuard, RolesGuard)

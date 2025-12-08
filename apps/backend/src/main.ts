@@ -44,6 +44,8 @@ async function bootstrap() {
     .setTitle('DoorStep API')
     .setDescription('Campus food delivery platform API documentation')
     .setVersion('1.0.0')
+    .addServer('http://localhost:3000', 'Local development')
+    .addServer('https://api.doorstepgh.com', 'Production server')
     .addBearerAuth()
     .addTag('auth', 'Authentication endpoints')
     .addTag('products', 'Product management')
