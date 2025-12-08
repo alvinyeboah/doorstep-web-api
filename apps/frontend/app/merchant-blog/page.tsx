@@ -1,4 +1,7 @@
 import Link from "next/link"
+import { ScrollReveal } from "@/components/animations/scroll-reveal"
+import { FadeIn } from "@/components/animations/fade-in"
+import { StaggerContainer, StaggerItem } from "@/components/animations/stagger-container"
 
 const featuredPost = {
   title: "How Campus Pizza Increased Revenue by 45% with DoorStep",

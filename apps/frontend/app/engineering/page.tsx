@@ -1,4 +1,7 @@
 import Link from "next/link"
+import { ScrollReveal } from "@/components/animations/scroll-reveal"
+import { FadeIn } from "@/components/animations/fade-in"
+import { StaggerContainer, StaggerItem } from "@/components/animations/stagger-container"
 
 const featuredPost = {
   title: "Building Real-Time Delivery Tracking with WebSockets and React",
@@ -80,19 +83,26 @@ export default function EngineeringBlogPage() {
       {/* Header */}
       <div className="max-w-7xl mx-auto px-6 mb-16">
         <div className="text-center space-y-4">
-          <div className="inline-block px-4 py-2 bg-secondary/10 rounded-full mb-2">
-            <span className="text-sm font-semibold text-secondary">Engineering Blog</span>
-          </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-foreground">Building DoorStep</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Technical insights and innovations from our engineering team
-          </p>
+          <FadeIn delay={0.1}>
+            <div className="inline-block px-4 py-2 bg-secondary/10 rounded-full mb-2">
+              <span className="text-sm font-semibold text-secondary">Engineering Blog</span>
+            </div>
+          </FadeIn>
+          <ScrollReveal delay={0.2}>
+            <h1 className="text-5xl md:text-6xl font-bold text-foreground">Building DoorStep</h1>
+          </ScrollReveal>
+          <FadeIn delay={0.3}>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Technical insights and innovations from our engineering team
+            </p>
+          </FadeIn>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 space-y-16">
         {/* Featured Post */}
-        <Link href={featuredPost.href} className="block group">
+        <FadeIn>
+          <Link href={featuredPost.href} className="block group">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-2xl transition-all duration-300">
             <div className="grid lg:grid-cols-2 gap-0">
               <div className="aspect-[16/10] lg:aspect-auto overflow-hidden">
@@ -125,15 +135,16 @@ export default function EngineeringBlogPage() {
         </Link>
 
         {/* Blog Posts Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8" staggerDelay={0.1}>
           {engineeringPosts.map((post) => (
-            <Link key={post.title} href={post.href} className="group">
+            <StaggerItem key={post.title}>
+              <Link href={post.href} className="group block h-full">
               <article className="h-full bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
                 <div className="aspect-[4/3] overflow-hidden">
                   <img
                     src={post.image}
                     alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                 </div>
                 <div className="p-6 space-y-3">
@@ -159,8 +170,10 @@ export default function EngineeringBlogPage() {
                 </div>
               </article>
             </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
+        </FadeIn>
       </div>
     </main>
   )
