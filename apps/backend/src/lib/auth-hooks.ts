@@ -16,153 +16,64 @@ function getPrismaInstance(): PrismaClient {
 
 /**
  * Hook that runs after a user is created via Better Auth
- * Creates a corresponding user_profiles record with the same UUID
+ * NOTE: Current schema uses User table with role-specific tables (Vendor, Customer, Stepper)
+ * User profile creation is handled by the application logic when registering for specific roles
  */
 export async function onUserCreated(user: {
   id: string;
   email: string;
   name?: string | null;
 }) {
-  const prisma = getPrismaInstance();
-  logger.log(`[AUTH HOOK] Creating user_profile for user ${user.id} (${user.email})`);
+  logger.log(`[AUTH HOOK] User created ${user.id} (${user.email})`);
 
-  try {
-    let firstName: string | undefined;
-    let lastName: string | undefined;
+  // The User table in Better Auth already contains the user data
+  // Role-specific profile creation (Vendor, Customer, Stepper) is handled
+  // by their respective registration endpoints
 
-    if (user.name) {
-      const nameParts = user.name.trim().split(' ');
-      firstName = nameParts[0];
-      lastName = nameParts.slice(1).join(' ') || undefined;
-    }
-
-    // Check if profile already exists before creating
-    const existingProfile = await prisma.user_profiles.findUnique({
-      where: { id: user.id },
-    });
-
-    if (existingProfile) {
-      logger.log(`[AUTH HOOK] User profile already exists for user ${user.id}, skipping creation`);
-      return;
-    }
-
-    // Create user_profiles with same UUID as Better Auth user
-    await prisma.user_profiles.create({
-      data: {
-        id: user.id, // Same UUID as Better Auth user
-        email: user.email,
-        first_name: firstName,
-        last_name: lastName,
-        preferences: {},
-        phone_number: null,
-        verified: false,
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-    });
-
-    logger.log(`[AUTH HOOK] ✅ Successfully created user_profile for user ${user.id}`);
-  } catch (error) {
-    logger.error(`[AUTH HOOK] ❌ Failed to create user_profile for user ${user.id}:`, error);
-    // Don't throw - profile creation failure shouldn't block authentication
-  }
+  // No action needed here - just logging for audit purposes
+  return;
 }
 
 /**
  * Hook that runs after a user is updated via Better Auth
- * Syncs email and name changes to user_profiles
+ * Syncs email and name changes to User table (handled automatically by Better Auth)
  */
 export async function onUserUpdated(user: {
   id: string;
   email?: string;
   name?: string | null;
 }) {
-  const prisma = getPrismaInstance();
-  logger.log(`[AUTH HOOK] Updating user_profile for user ${user.id}`);
+  logger.log(`[AUTH HOOK] User updated ${user.id}`);
 
-  try {
-    interface ProfileUpdates {
-      email?: string;
-      first_name?: string | null;
-      last_name?: string | null;
-    }
+  // Better Auth automatically updates the User table
+  // No additional sync needed
 
-    const updates: ProfileUpdates = {};
-
-    if (user.email) {
-      updates.email = user.email;
-    }
-
-    if (user.name !== undefined) {
-      const nameParts = user.name ? user.name.trim().split(' ') : [];
-      updates.first_name = nameParts[0] || null;
-      updates.last_name = nameParts.slice(1).join(' ') || null;
-    }
-
-    if (Object.keys(updates).length > 0) {
-      // First check if profile exists
-      const existingProfile = await prisma.user_profiles.findUnique({
-        where: { id: user.id },
-      });
-
-      if (existingProfile) {
-        await prisma.user_profiles.update({
-          where: { id: user.id },
-          data: {
-            ...updates,
-            updated_at: new Date(),
-          },
-        });
-        logger.log(`[AUTH HOOK] ✅ Successfully updated user_profile for user ${user.id}`);
-      } else {
-        logger.log(`[AUTH HOOK] User profile not found for user ${user.id}, skipping update`);
-      }
-    }
-  } catch (error) {
-    logger.error(`[AUTH HOOK] ❌ Failed to update user_profile for user ${user.id}:`, error);
-    // Don't throw - sync issues shouldn't block auth operations
-  }
+  return;
 }
 
 /**
  * Hook that runs after a user is deleted via Better Auth
- * Deletes the corresponding user_profiles record
+ * Cascade deletes handled by Prisma schema relations
  */
 export async function onUserDeleted(userId: string) {
-  const prisma = getPrismaInstance();
-  logger.log(`[AUTH HOOK] Deleting user_profile for user ${userId}`);
+  logger.log(`[AUTH HOOK] User deleted ${userId}`);
 
-  try {
-    await prisma.user_profiles.delete({
-      where: { id: userId },
-    });
-    logger.log(`[AUTH HOOK] ✅ Successfully deleted user_profile for user ${userId}`);
-  } catch (error) {
-    logger.error(`[AUTH HOOK] ❌ Failed to delete user_profile for user ${userId}:`, error);
-    // Don't throw - profile might already be deleted by cascade
-  }
+  // Prisma cascade delete rules automatically handle deletion of:
+  // - Vendor, Customer, Stepper records (onDelete: Cascade)
+  // - Sessions, Accounts, etc.
+
+  return;
 }
 
 /**
  * Hook that runs after a user signs in
- * Updates last_sign_in_at timestamp to track user activity
+ * Can be used for tracking or analytics
  */
 export async function onUserSignIn(userId: string) {
-  const prisma = getPrismaInstance();
+  logger.log(`[AUTH HOOK] User signed in ${userId}`);
 
-  try {
-    // Update last_sign_in_at to current timestamp
-    await prisma.user_profiles.updateMany({
-      where: { id: userId },
-      data: {
-        last_sign_in_at: new Date(),
-        updated_at: new Date(),
-      },
-    });
+  // Can implement sign-in tracking here if needed in the future
+  // For now, just logging for audit purposes
 
-    logger.log(`[AUTH HOOK] ✅ Updated last_sign_in_at for user ${userId}`);
-  } catch (error) {
-    logger.error(`[AUTH HOOK] ❌ Failed to update last_sign_in_at for user ${userId}:`, error);
-    // Don't throw - tracking failure shouldn't block sign-in
-  }
+  return;
 }

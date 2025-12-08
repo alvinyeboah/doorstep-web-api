@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { auth } from '../../../lib/auth';
-import { onUserCreated } from '../../../lib/auth-hooks';
+import { auth } from '../../lib/auth';
+import { onUserCreated } from '../../lib/auth-hooks';
 
 @Injectable()
 export class AuthService {

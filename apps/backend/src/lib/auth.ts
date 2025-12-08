@@ -113,12 +113,12 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
 
   // Register custom middleware to handle user profile creation
   middleware: {
-    pre: async (request) => {
+    pre: async (request: Request) => {
       // Log all auth requests for debugging
       console.log(`[BETTER AUTH MIDDLEWARE] ${request.method} ${request.url}`);
       return request;
     },
-    post: async (response) => {
+    post: async (response: Response) => {
       // Check if this was a successful sign-up or sign-in
       const url = new URL(response.url);
 

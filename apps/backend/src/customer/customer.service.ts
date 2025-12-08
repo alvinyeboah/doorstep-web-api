@@ -146,7 +146,7 @@ export class CustomerService {
 
     const total =
       cart?.items.reduce(
-        (sum, item) => sum + item.product.price * item.quantity,
+        (sum: number, item: any) => sum + item.product.price * item.quantity,
         0,
       ) || 0;
 
