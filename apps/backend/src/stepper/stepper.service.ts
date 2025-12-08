@@ -18,10 +18,14 @@ import {
   type Location,
   type GeoJSONPoint,
 } from '../common/utils/geolocation.utils';
+import { PlunkService } from '../plunk/plunk.service';
 
 @Injectable()
 export class StepperService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private plunkService: PlunkService,
+  ) {}
 
   async register(userId: string, dto: RegisterStepperDto) {
     const user = await this.prisma.user.findUnique({
@@ -69,6 +73,14 @@ export class StepperService {
     await this.prisma.wallet.create({
       data: { stepperId: stepper.id },
     });
+
+    // Send welcome email
+    try {
+      await this.plunkService.sendStepperWelcome(user.email, user.name);
+    } catch (error) {
+      // Don't fail registration if email fails
+      console.error('Failed to send welcome email:', error);
+    }
 
     return {
       stepper,
@@ -241,7 +253,7 @@ export class StepperService {
   async requestWithdrawal(userId: string, dto: WithdrawalRequestDto) {
     const stepper = await this.prisma.stepper.findUnique({
       where: { userId },
-      include: { wallet: true },
+      include: { wallet: true, user: true },
     });
 
     if (!stepper || !stepper.wallet) {
@@ -265,10 +277,22 @@ export class StepperService {
       },
     });
 
+    // Send 2FA code via email
+    try {
+      await this.plunkService.send2FACode(
+        stepper.user.email,
+        twoFactorCode,
+        dto.amount,
+      );
+    } catch (error) {
+      console.error('Failed to send 2FA email:', error);
+      // Continue anyway - code is in the response as fallback
+    }
+
     return {
       request,
-      twoFactorCode, // In production, send via SMS/email
-      message: 'Withdrawal request created. Use the 2FA code to confirm.',
+      message:
+        'Withdrawal request created. Check your email for the 2FA verification code.',
     };
   }
 

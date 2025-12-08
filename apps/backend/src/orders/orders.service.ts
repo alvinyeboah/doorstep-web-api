@@ -15,10 +15,18 @@ import {
   calculateDistance,
   calculateDeliveryFee,
 } from '../common/utils/geolocation.utils';
+import { OrdersGateway } from './orders.gateway';
+import { PushNotificationService } from '../notifications/push-notification.service';
+import { forwardRef, Inject } from '@nestjs/common';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => OrdersGateway))
+    private ordersGateway: OrdersGateway,
+    private pushNotificationService: PushNotificationService,
+  ) {}
 
   async createOrder(userId: string, dto: CreateOrderDto) {
     const customer = await this.prisma.customer.findUnique({
@@ -203,6 +211,43 @@ export class OrdersService {
           },
         });
       }
+    }
+
+    // Emit real-time update via WebSocket
+    try {
+      this.ordersGateway.emitOrderStatusUpdate(
+        updated.id,
+        dto.status,
+        updated,
+      );
+    } catch (error) {
+      console.error('Failed to emit WebSocket update:', error);
+    }
+
+    // Send push notification to customer
+    try {
+      const statusMessages: Record<string, string> = {
+        PLACED: 'Your order has been placed!',
+        ACCEPTED: 'Your order has been accepted by the vendor.',
+        PREPARING: 'Your order is being prepared.',
+        READY: 'Your order is ready for pickup!',
+        OUT_FOR_DELIVERY: 'Your order is out for delivery!',
+        DELIVERED: 'Your order has been delivered. Enjoy!',
+        COMPLETED: 'Thank you for your order!',
+        CANCELLED: 'Your order has been cancelled.',
+      };
+
+      await this.pushNotificationService.sendPushToUser(updated.customer.userId, {
+        title: 'Order Update',
+        body: statusMessages[dto.status] || `Order status: ${dto.status}`,
+        data: {
+          orderId: updated.id,
+          status: dto.status,
+          type: 'order_update',
+        },
+      });
+    } catch (error) {
+      console.error('Failed to send push notification:', error);
     }
 
     return {

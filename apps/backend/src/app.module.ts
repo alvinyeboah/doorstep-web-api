@@ -13,6 +13,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { SuperAdminModule } from './super-admin/super-admin.module';
 import { UploadModule } from './upload/upload.module';
 import { PaymentsModule } from './payments/payments.module';
+import { PlunkModule } from './plunk/plunk.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PaymentsModule } from './payments/payments.module';
     SuperAdminModule,
     UploadModule,
     PaymentsModule,
+    PlunkModule,
   ],
   controllers: [AppController],
   providers: [AppService],

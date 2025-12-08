@@ -51,9 +51,10 @@ model User {
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
   // Custom fields
-  phone     String?
-  role      String    @default("CUSTOMER") // VENDOR, STEPPER, CUSTOMER, SUPER_ADMIN
-  verified  Boolean   @default(false)
+  phone      String?
+  role       String    @default("CUSTOMER") // VENDOR, STEPPER, CUSTOMER, SUPER_ADMIN
+  verified   Boolean   @default(false)
+  pushToken  String?   @map("push_token") // Device push notification token (Expo/Native)
 
   // Relations
   sessions      Session[]
