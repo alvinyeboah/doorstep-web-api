@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ScrollReveal } from "@/components/animations/scroll-reveal"
+import { FadeIn } from "@/components/animations/fade-in"
 
 export default function BusinessPage() {
   return (
@@ -9,39 +11,47 @@ export default function BusinessPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
-                <span className="text-sm font-semibold text-primary">DoorStep for Business</span>
-              </div>
-              <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-                Reach thousands of
-                <span className="block text-primary">hungry students</span>
-              </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                Partner with DoorStep to grow your revenue, expand your reach, and become a campus favorite. Zero upfront costs, no long-term commitments.
-              </p>
-              <div className="flex flex-wrap items-center gap-4">
-                <Link href="/signup">
-                  <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-full px-8 py-6 text-lg font-semibold shadow-lg">
-                    Become a Partner
-                  </Button>
-                </Link>
-                <Link href="/help">
-                  <Button variant="outline" className="rounded-full px-8 py-6 text-lg font-semibold border-2">
-                    Learn More
-                  </Button>
-                </Link>
-              </div>
+              <FadeIn delay={0.1}>
+                <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
+                  <span className="text-sm font-semibold text-primary">DoorStep for Business</span>
+                </div>
+              </FadeIn>
+              <ScrollReveal delay={0.2}>
+                <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
+                  Reach thousands of
+                  <span className="block bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">hungry students</span>
+                </h1>
+              </ScrollReveal>
+              <FadeIn delay={0.3}>
+                <p className="text-xl text-muted-foreground leading-relaxed">
+                  Partner with DoorStep to grow your revenue, expand your reach, and become a campus favorite. Zero upfront costs, no long-term commitments.
+                </p>
+              </FadeIn>
+              <FadeIn delay={0.4}>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link href="/signup">
+                    <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                      Become a Partner
+                    </Button>
+                  </Link>
+                  <Link href="/help">
+                    <Button variant="outline" className="rounded-full px-8 py-6 text-lg font-semibold border-2 hover:border-foreground transition-all hover:scale-105">
+                      Learn More
+                    </Button>
+                  </Link>
+                </div>
+              </FadeIn>
             </div>
-            <div className="relative">
-              <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+            <FadeIn delay={0.3} className="relative">
+              <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl group">
                 <img
                   src="https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&h=600&fit=crop&q=90"
                   alt="Restaurant kitchen"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
               </div>
-            </div>
+            </FadeIn>
           </div>
         </div>
       </section>

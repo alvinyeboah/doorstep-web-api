@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ScrollReveal } from "@/components/animations/scroll-reveal"
+import { FadeIn } from "@/components/animations/fade-in"
 
 export default function WorkPage() {
   return (
@@ -9,39 +11,47 @@ export default function WorkPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <div className="inline-block px-4 py-2 bg-secondary/10 rounded-full">
-                <span className="text-sm font-semibold text-secondary">DoorStep for Work</span>
-              </div>
-              <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-                Simplify team meals
-                <span className="block text-secondary">and campus events</span>
-              </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                From department meetings to campus events, DoorStep makes it easy to feed your team. Manage expenses, track orders, and delight everyone with seamless group ordering.
-              </p>
-              <div className="flex flex-wrap items-center gap-4">
-                <Link href="/signup">
-                  <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-full px-8 py-6 text-lg font-semibold shadow-lg">
-                    Get Started
-                  </Button>
-                </Link>
-                <Link href="/help">
-                  <Button variant="outline" className="rounded-full px-8 py-6 text-lg font-semibold border-2">
-                    Contact Sales
-                  </Button>
-                </Link>
-              </div>
+              <FadeIn delay={0.1}>
+                <div className="inline-block px-4 py-2 bg-secondary/10 rounded-full">
+                  <span className="text-sm font-semibold text-secondary">DoorStep for Work</span>
+                </div>
+              </FadeIn>
+              <ScrollReveal delay={0.2}>
+                <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
+                  Simplify team meals
+                  <span className="block bg-gradient-to-r from-secondary to-blue-600 bg-clip-text text-transparent">and campus events</span>
+                </h1>
+              </ScrollReveal>
+              <FadeIn delay={0.3}>
+                <p className="text-xl text-muted-foreground leading-relaxed">
+                  From department meetings to campus events, DoorStep makes it easy to feed your team. Manage expenses, track orders, and delight everyone with seamless group ordering.
+                </p>
+              </FadeIn>
+              <FadeIn delay={0.4}>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link href="/signup">
+                    <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                      Get Started
+                    </Button>
+                  </Link>
+                  <Link href="/help">
+                    <Button variant="outline" className="rounded-full px-8 py-6 text-lg font-semibold border-2 hover:border-foreground transition-all hover:scale-105">
+                      Contact Sales
+                    </Button>
+                  </Link>
+                </div>
+              </FadeIn>
             </div>
-            <div className="relative">
-              <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+            <FadeIn delay={0.3} className="relative">
+              <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl group">
                 <img
                   src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&h=600&fit=crop&q=90"
                   alt="Team meeting with food"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
               </div>
-            </div>
+            </FadeIn>
           </div>
         </div>
       </section>
