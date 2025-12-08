@@ -185,7 +185,33 @@ export class OrdersController {
     description: 'Order not found',
   })
   async acceptOrder(@CurrentUser() user: any, @Param('id') id: string) {
-    return this.ordersService.acceptOrder(user.id, id);
+    return this.ordersService.acceptOrder(id, user.id);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('STEPPER')
+  @Post(':id/decline')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Decline an order',
+    description:
+      'Stepper declines an auto-assigned order. Order becomes available for next nearest stepper.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Order ID',
+    example: 'clp123abc456def',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Order declined successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order not found',
+  })
+  async declineOrder(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.ordersService.declineOrder(id, user.id);
   }
 
   @UseGuards(AuthGuard, RolesGuard)

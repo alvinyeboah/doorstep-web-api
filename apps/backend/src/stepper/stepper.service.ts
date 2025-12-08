@@ -360,9 +360,21 @@ export class StepperService {
     });
 
     // Filter steppers with location data and calculate distances
+    type StepperWithUser = typeof steppers[number];
+    type StepperWithDistance = {
+      id: string;
+      name: string;
+      phone: string | null;
+      rating: number;
+      pictureUrl: string | null;
+      location: any;
+      distance: number;
+      verified: boolean;
+    };
+
     const steppersWithDistance = steppers
-      .filter((stepper: any) => stepper.location !== null)
-      .map((stepper: any) => {
+      .filter((stepper: StepperWithUser) => stepper.location !== null)
+      .map((stepper: StepperWithUser): StepperWithDistance => {
         const stepperLocation = geoJSONToLocation(
           stepper.location as GeoJSONPoint,
         );
@@ -379,8 +391,8 @@ export class StepperService {
           verified: stepper.verified,
         };
       })
-      .filter((stepper: any) => stepper.distance <= radiusKm)
-      .sort((a: any, b: any) => a.distance - b.distance);
+      .filter((stepper: StepperWithDistance) => stepper.distance <= radiusKm)
+      .sort((a: StepperWithDistance, b: StepperWithDistance) => a.distance - b.distance);
 
     return {
       steppers: steppersWithDistance,

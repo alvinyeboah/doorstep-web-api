@@ -69,8 +69,8 @@ export class PushNotificationService {
     });
 
     const tokens = users
-      .map((u: any) => u.pushToken)
-      .filter((t: any) => t) as string[];
+      .map((u: { pushToken: string | null }) => u.pushToken)
+      .filter((t: string | null): t is string => t !== null);
 
     if (tokens.length === 0) {
       this.logger.warn('No valid push tokens found');
