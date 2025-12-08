@@ -1,4 +1,7 @@
 import Link from "next/link"
+import { ScrollReveal } from "@/components/animations/scroll-reveal"
+import { FadeIn } from "@/components/animations/fade-in"
+import { StaggerContainer, StaggerItem } from "@/components/animations/stagger-container"
 
 const featuredPost = {
   title: "Introducing DoorStep Premium: Your All-Access Pass to Campus",
@@ -73,82 +76,92 @@ export default function BlogPage() {
       {/* Header */}
       <div className="max-w-7xl mx-auto px-6 mb-16">
         <div className="text-center space-y-4">
-          <div className="inline-block px-4 py-2 bg-primary/10 rounded-full mb-2">
-            <span className="text-sm font-semibold text-primary">Company Blog</span>
-          </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-foreground">Stories from DoorStep</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Updates, insights, and stories from our team and community
-          </p>
+          <FadeIn delay={0.1}>
+            <div className="inline-block px-4 py-2 bg-primary/10 rounded-full mb-2">
+              <span className="text-sm font-semibold text-primary">Company Blog</span>
+            </div>
+          </FadeIn>
+          <ScrollReveal delay={0.2}>
+            <h1 className="text-5xl md:text-6xl font-bold text-foreground">Stories from DoorStep</h1>
+          </ScrollReveal>
+          <FadeIn delay={0.3}>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Updates, insights, and stories from our team and community
+            </p>
+          </FadeIn>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 space-y-16">
         {/* Featured Post */}
-        <Link href={featuredPost.href} className="block group">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-2xl transition-all duration-300">
-            <div className="grid lg:grid-cols-2 gap-0">
-              <div className="aspect-[16/10] lg:aspect-auto overflow-hidden">
-                <img
-                  src={featuredPost.image}
-                  alt={featuredPost.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="p-12 flex flex-col justify-center">
-                <div className="inline-block px-3 py-1 bg-primary/10 text-primary text-sm font-semibold rounded-full mb-4 w-fit">
-                  Featured
+        <FadeIn>
+          <Link href={featuredPost.href} className="block group">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-2xl transition-all duration-300">
+              <div className="grid lg:grid-cols-2 gap-0">
+                <div className="aspect-[16/10] lg:aspect-auto overflow-hidden">
+                  <img
+                    src={featuredPost.image}
+                    alt={featuredPost.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
-                  {featuredPost.title}
-                </h2>
-                <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                  {featuredPost.excerpt}
-                </p>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>{featuredPost.date}</span>
-                  <span>•</span>
-                  <span>{featuredPost.readTime}</span>
+                <div className="p-12 flex flex-col justify-center">
+                  <div className="inline-block px-3 py-1 bg-primary/10 text-primary text-sm font-semibold rounded-full mb-4 w-fit">
+                    Featured
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
+                    {featuredPost.title}
+                  </h2>
+                  <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                    {featuredPost.excerpt}
+                  </p>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span>{featuredPost.date}</span>
+                    <span>•</span>
+                    <span>{featuredPost.readTime}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+        </FadeIn>
 
         {/* Blog Posts Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8" staggerDelay={0.1}>
           {blogPosts.map((post) => (
-            <Link key={post.title} href={post.href} className="group">
-              <article className="h-full bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                <div className="aspect-[4/3] overflow-hidden">
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-6 space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="px-3 py-1 bg-primary/10 text-primary font-semibold rounded-full">
-                      {post.category}
-                    </span>
+            <StaggerItem key={post.title}>
+              <Link href={post.href} className="group block h-full">
+                <article className="h-full bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                    {post.title}
-                  </h3>
-                  <p className="text-muted-foreground line-clamp-3 leading-relaxed">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground pt-2">
-                    <span>{post.date}</span>
-                    <span>•</span>
-                    <span>{post.readTime}</span>
+                  <div className="p-6 space-y-3">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="px-3 py-1 bg-primary/10 text-primary font-semibold rounded-full">
+                        {post.category}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-muted-foreground line-clamp-3 leading-relaxed">
+                      {post.excerpt}
+                    </p>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground pt-2">
+                      <span>{post.date}</span>
+                      <span>•</span>
+                      <span>{post.readTime}</span>
+                    </div>
                   </div>
-                </div>
-              </article>
-            </Link>
+                </article>
+              </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
     </main>
   )
