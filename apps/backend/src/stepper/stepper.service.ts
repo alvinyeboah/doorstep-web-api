@@ -365,7 +365,7 @@ export class StepperService {
       id: string;
       name: string;
       phone: string | null;
-      rating: number;
+      rating: number | null;
       pictureUrl: string | null;
       location: any;
       distance: number;
@@ -376,7 +376,7 @@ export class StepperService {
       .filter((stepper: StepperWithUser) => stepper.location !== null)
       .map((stepper: StepperWithUser): StepperWithDistance => {
         const stepperLocation = geoJSONToLocation(
-          stepper.location as GeoJSONPoint,
+          stepper.location as unknown as GeoJSONPoint,
         );
         const distance = calculateDistance(origin, stepperLocation);
 
