@@ -54,6 +54,7 @@ async function bootstrap() {
     .addTag('steppers', 'Delivery steppers')
     .addTag('customers', 'Customer management')
     .addTag('upload', 'File upload endpoints')
+    .addTag('payments', 'Payment processing with Paystack')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

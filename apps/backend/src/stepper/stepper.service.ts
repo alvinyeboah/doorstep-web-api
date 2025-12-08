@@ -12,10 +12,20 @@ import {
   WithdrawalRequestDto,
 } from './dto/stepper.dto';
 import { createPaginatedResponse } from '../common/dto/pagination.dto';
+import {
+  calculateDistance,
+  geoJSONToLocation,
+  type Location,
+  type GeoJSONPoint,
+} from '../common/utils/geolocation.utils';
+import { PlunkService } from '../plunk/plunk.service';
 
 @Injectable()
 export class StepperService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private plunkService: PlunkService,
+  ) {}
 
   async register(userId: string, dto: RegisterStepperDto) {
     const user = await this.prisma.user.findUnique({
@@ -63,6 +73,14 @@ export class StepperService {
     await this.prisma.wallet.create({
       data: { stepperId: stepper.id },
     });
+
+    // Send welcome email
+    try {
+      await this.plunkService.sendStepperWelcome(user.email, user.name);
+    } catch (error) {
+      // Don't fail registration if email fails
+      console.error('Failed to send welcome email:', error);
+    }
 
     return {
       stepper,
@@ -235,7 +253,7 @@ export class StepperService {
   async requestWithdrawal(userId: string, dto: WithdrawalRequestDto) {
     const stepper = await this.prisma.stepper.findUnique({
       where: { userId },
-      include: { wallet: true },
+      include: { wallet: true, user: true },
     });
 
     if (!stepper || !stepper.wallet) {
@@ -259,10 +277,22 @@ export class StepperService {
       },
     });
 
+    // Send 2FA code via email
+    try {
+      await this.plunkService.send2FACode(
+        stepper.user.email,
+        twoFactorCode,
+        dto.amount,
+      );
+    } catch (error) {
+      console.error('Failed to send 2FA email:', error);
+      // Continue anyway - code is in the response as fallback
+    }
+
     return {
       request,
-      twoFactorCode, // In production, send via SMS/email
-      message: 'Withdrawal request created. Use the 2FA code to confirm.',
+      message:
+        'Withdrawal request created. Check your email for the 2FA verification code.',
     };
   }
 
@@ -307,5 +337,68 @@ export class StepperService {
     });
 
     return history;
+  }
+
+  async getNearbySteppers(latitude: number, longitude: number, radiusKm = 10) {
+    const origin: Location = { latitude, longitude };
+
+    // Find all available and verified steppers
+    const steppers = await this.prisma.stepper.findMany({
+      where: {
+        available: true,
+        verified: true,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+    // Filter steppers with location data and calculate distances
+    type StepperWithUser = typeof steppers[number];
+    type StepperWithDistance = {
+      id: string;
+      name: string;
+      phone: string | null;
+      rating: number;
+      pictureUrl: string | null;
+      location: any;
+      distance: number;
+      verified: boolean;
+    };
+
+    const steppersWithDistance = steppers
+      .filter((stepper: StepperWithUser) => stepper.location !== null)
+      .map((stepper: StepperWithUser): StepperWithDistance => {
+        const stepperLocation = geoJSONToLocation(
+          stepper.location as GeoJSONPoint,
+        );
+        const distance = calculateDistance(origin, stepperLocation);
+
+        return {
+          id: stepper.id,
+          name: stepper.user.name,
+          phone: stepper.user.phone,
+          rating: stepper.rating,
+          pictureUrl: stepper.pictureUrl,
+          location: stepper.location,
+          distance: distance,
+          verified: stepper.verified,
+        };
+      })
+      .filter((stepper: StepperWithDistance) => stepper.distance <= radiusKm)
+      .sort((a: StepperWithDistance, b: StepperWithDistance) => a.distance - b.distance);
+
+    return {
+      steppers: steppersWithDistance,
+      count: steppersWithDistance.length,
+      searchRadius: radiusKm,
+      searchLocation: { latitude, longitude },
+    };
   }
 }

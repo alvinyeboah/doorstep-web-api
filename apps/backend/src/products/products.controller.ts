@@ -196,6 +196,36 @@ export class ProductsController {
     return this.productsService.searchProducts(search);
   }
 
+  @Get('all')
+  @ApiOperation({
+    summary: 'Get all products',
+    description: 'Retrieve all available products with pagination (for homepage)',
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Products retrieved successfully with pagination info',
+  })
+  async getAllProducts(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.productsService.getAllProducts(pageNum, limitNum);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get product by ID',

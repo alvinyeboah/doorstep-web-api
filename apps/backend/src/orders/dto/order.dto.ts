@@ -62,6 +62,14 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   customerNotes?: string;
+
+  @ApiPropertyOptional({
+    description: 'Auto-assign to nearest available stepper',
+    example: true,
+    default: false,
+  })
+  @IsOptional()
+  autoAssign?: boolean;
 }
 
 export class UpdateOrderStatusDto {
