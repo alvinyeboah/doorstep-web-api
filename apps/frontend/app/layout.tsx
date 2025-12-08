@@ -13,10 +13,10 @@ export const metadata: Metadata = {
   description: "Get food delivered to your dorm, library, or anywhere on campus. $0 delivery fee on your first order.",
   icons: {
     icon: [
-      { url: '/logos/logo-nobackground.jpeg', type: 'image/jpeg' },
+      { url: '/logos/logo-big.jpeg', type: 'image/jpeg' },
     ],
     apple: [
-      { url: '/logos/logo-nobackground.jpeg', type: 'image/jpeg' },
+      { url: '/logos/logo-big.jpeg', type: 'image/jpeg' },
     ],
   },
 }
