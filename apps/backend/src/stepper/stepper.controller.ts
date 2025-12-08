@@ -7,6 +7,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { StepperService } from './stepper.service';
 import {
   RegisterStepperDto,
@@ -20,6 +27,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
+@ApiTags('steppers')
 @Controller('stepper')
 export class StepperController {
   constructor(private readonly stepperService: StepperService) {}
@@ -27,6 +35,27 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Post('register')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Register as a stepper',
+    description: 'User with stepper role registers as a delivery person',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Stepper profile created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - invalid data or already registered',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - stepper role required',
+  })
   async register(@CurrentUser() user: any, @Body() dto: RegisterStepperDto) {
     return this.stepperService.register(user.id, dto);
   }
@@ -34,6 +63,31 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Put('profile')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update stepper profile',
+    description: 'Stepper updates their profile information',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Stepper profile updated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - invalid data',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - stepper role required',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Stepper profile not found',
+  })
   async updateProfile(@CurrentUser() user: any, @Body() dto: UpdateStepperDto) {
     return this.stepperService.updateProfile(user.id, dto);
   }
@@ -41,6 +95,27 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Get('profile')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get my stepper profile',
+    description: 'Stepper retrieves their own profile',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Stepper profile retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - stepper role required',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Stepper profile not found',
+  })
   async getProfile(@CurrentUser() user: any) {
     return this.stepperService.getProfile(user.id);
   }
@@ -48,6 +123,27 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Put('availability')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update availability status',
+    description: 'Stepper toggles their availability for accepting deliveries',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Availability updated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - invalid data',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - stepper role required',
+  })
   async updateAvailability(
     @CurrentUser() user: any,
     @Body() dto: UpdateAvailabilityDto,
@@ -58,6 +154,29 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Get('orders')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get stepper orders',
+    description: 'Stepper retrieves their delivery orders with optional status filter',
+  })
+  @ApiQuery({
+    name: 'status',
+    description: 'Filter by order status',
+    example: 'OUT_FOR_DELIVERY',
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Orders retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - stepper role required',
+  })
   async getOrders(@CurrentUser() user: any, @Query('status') status?: string) {
     return this.stepperService.getOrders(user.id, status);
   }
@@ -65,6 +184,23 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Get('wallet')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get wallet balance',
+    description: 'Stepper retrieves their wallet balance and transaction history',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Wallet information retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - stepper role required',
+  })
   async getWallet(@CurrentUser() user: any) {
     return this.stepperService.getWallet(user.id);
   }
@@ -72,6 +208,27 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Post('deposit')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Make a deposit',
+    description: 'Stepper makes a deposit to their wallet',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Deposit successful',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - invalid amount',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - stepper role required',
+  })
   async makeDeposit(@CurrentUser() user: any, @Body() dto: DepositDto) {
     return this.stepperService.makeDeposit(user.id, dto);
   }
@@ -79,6 +236,27 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Post('withdrawal')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Request a withdrawal',
+    description: 'Stepper requests to withdraw funds from their wallet',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Withdrawal request created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - insufficient funds or invalid amount',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - stepper role required',
+  })
   async requestWithdrawal(
     @CurrentUser() user: any,
     @Body() dto: WithdrawalRequestDto,
@@ -89,6 +267,23 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Get('withdrawals')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get withdrawal requests',
+    description: 'Stepper retrieves their withdrawal request history',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Withdrawal requests retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - stepper role required',
+  })
   async getWithdrawalRequests(@CurrentUser() user: any) {
     return this.stepperService.getWithdrawalRequests(user.id);
   }
@@ -96,6 +291,23 @@ export class StepperController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('STEPPER')
   @Get('commission-history')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get commission history',
+    description: 'Stepper retrieves their delivery commission earnings history',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Commission history retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - stepper role required',
+  })
   async getCommissionHistory(@CurrentUser() user: any) {
     return this.stepperService.getCommissionHistory(user.id);
   }
