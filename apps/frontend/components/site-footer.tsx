@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 
 const footerLinks = {
   "For You": [
@@ -18,7 +19,13 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           <div>
             <Link href="/" className="flex items-center mb-6">
-              <span className="text-2xl font-bold tracking-tight">DoorStep</span>
+              <Image
+                src="/logos/logo-white.jpeg"
+                alt="DoorStep"
+                width={140}
+                height={45}
+                className="h-12 w-auto"
+              />
             </Link>
             <p className="text-white/60 text-sm mb-6">Campus food delivery made simple</p>
             <div className="flex gap-4">
