@@ -1,52 +1,59 @@
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export function OpportunitySection() {
   return (
-    <section className="py-20 px-6 bg-background">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center mb-16">
-          Unlocking opportunity for Steppers and businesses
-        </h2>
-
+    <section className="py-32 px-6 bg-white">
+      <div className="max-w-7xl mx-auto space-y-24">
         {/* Become a Stepper */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-          <div>
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">
-              Sign up to step and get paid
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="space-y-6">
+            <h3 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
+              Earn on your schedule
             </h3>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              Deliver with the #1 Food and Drink App on campus. As a delivery driver, you'll make money and work on your
-              schedule. Sign up in minutes.
+            <p className="text-xl text-muted-foreground leading-relaxed">
+              Deliver for your campus community and get paid weekly. Work when you want, earn what you need.
             </p>
-            <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-8">Become a Stepper</Button>
+            <Link href="/signup">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-14 text-base font-semibold">
+                Become a Stepper
+              </Button>
+            </Link>
           </div>
           <div className="relative">
-            <img
-              src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=500&fit=crop&q=80"
-              alt="Delivery driver"
-              className="rounded-lg w-full h-auto object-cover"
-            />
+            <div className="rounded-3xl overflow-hidden shadow-2xl">
+              <img
+                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=600&fit=crop&q=90"
+                alt="Delivery driver"
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
         </div>
 
         {/* Grow your business */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="relative order-2 lg:order-1">
-            <img
-              src="https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=600&h=500&fit=crop&q=80"
-              alt="Restaurant partner"
-              className="rounded-lg w-full h-auto object-cover"
-            />
+            <div className="rounded-3xl overflow-hidden shadow-2xl">
+              <img
+                src="https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=800&h=600&fit=crop&q=90"
+                alt="Restaurant partner"
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
-          <div className="order-1 lg:order-2">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">
-              Grow your business with DoorStep
+          <div className="space-y-6 order-1 lg:order-2">
+            <h3 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
+              Grow your business
             </h3>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              Reach new customers and grow your sales with delivery and pickup. Our platform gives you the tools to
-              manage orders and connect with hungry students.
+            <p className="text-xl text-muted-foreground leading-relaxed">
+              Reach hungry students and expand your sales. Join the leading campus food delivery platform.
             </p>
-            <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-8">Get started</Button>
+            <Link href="/signup">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-14 text-base font-semibold">
+                Become a partner
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

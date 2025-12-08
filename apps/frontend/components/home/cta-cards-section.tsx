@@ -1,49 +1,54 @@
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 const cards = [
   {
     title: "Become a Stepper",
-    description: "As a delivery driver, make money and work on your schedule. Sign up in minutes.",
+    description: "Earn money on your schedule. Deliver for your campus community and get paid weekly.",
     cta: "Start earning",
-    href: "/stepper",
-    image: "https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=120&h=120&fit=crop&q=80",
+    href: "/signup",
+    image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=400&fit=crop&q=80",
   },
   {
-    title: "Become a Merchant",
-    description: "Attract new customers and grow sales, starting with 0% commissions for up to 30 days.",
-    cta: "Sign up for DoorStep",
-    href: "/merchant",
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=120&h=120&fit=crop&q=80",
+    title: "Become a Partner",
+    description: "Grow your business and reach new customers. Join thousands of campus merchants.",
+    cta: "Partner with us",
+    href: "/signup",
+    image: "https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=600&h=400&fit=crop&q=80",
   },
   {
-    title: "Get the best DoorStep experience",
-    description: "Experience the best your campus has to offer, all in one app.",
-    cta: "Get the app",
-    href: "/app",
-    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=120&h=120&fit=crop&q=80",
+    title: "Try DoorStep",
+    description: "Get $0 delivery fees on your first order. Experience the best campus food delivery.",
+    cta: "Order now",
+    href: "/signup",
+    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&h=400&fit=crop&q=80",
   },
 ]
 
 export function CtaCardsSection() {
   return (
-    <section className="py-20 px-6 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <section className="py-24 px-6 bg-white">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cards.map((card) => (
-            <div key={card.title} className="text-center">
-              <div className="mb-6 flex justify-center">
-                <div className="w-32 h-32 rounded-full bg-sky-100 flex items-center justify-center overflow-hidden">
-                  <img src={card.image || "/placeholder.svg"} alt={card.title} className="w-24 h-24 object-contain" />
+            <Link key={card.title} href={card.href} className="group">
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-xl transition-all duration-300">
+                <div className="aspect-[4/3] overflow-hidden">
+                  <img
+                    src={card.image}
+                    alt={card.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-8">
+                  <h3 className="text-2xl font-bold text-foreground mb-3">{card.title}</h3>
+                  <p className="text-muted-foreground mb-6 leading-relaxed">{card.description}</p>
+                  <Button variant="ghost" className="text-primary hover:text-primary/80 hover:bg-transparent p-0 h-auto font-semibold">
+                    {card.cta} →
+                  </Button>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-foreground mb-3">{card.title}</h3>
-              <p className="text-muted-foreground mb-4 text-sm leading-relaxed max-w-xs mx-auto">{card.description}</p>
-              <Link href={card.href} className="inline-flex items-center text-primary font-semibold hover:underline">
-                {card.cta}
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
