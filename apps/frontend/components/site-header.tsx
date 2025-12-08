@@ -1,6 +1,7 @@
 'use client'
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
@@ -28,7 +29,14 @@ export function SiteHeader() {
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-foreground tracking-tight">DoorStep</span>
+            <Image
+              src="/logos/logo-nobackground.jpeg"
+              alt="DoorStep"
+              width={120}
+              height={40}
+              className="h-10 w-auto"
+              priority
+            />
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
