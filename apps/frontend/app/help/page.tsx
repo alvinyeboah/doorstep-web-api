@@ -6,7 +6,6 @@ import Link from "next/link"
 const categories = [
   {
     name: "For Customers",
-    icon: "🛒",
     faqs: [
       {
         question: "How do I place an order?",
@@ -36,7 +35,6 @@ const categories = [
   },
   {
     name: "For Steppers",
-    icon: "🚴",
     faqs: [
       {
         question: "How much can I earn as a Stepper?",
@@ -66,7 +64,6 @@ const categories = [
   },
   {
     name: "For Partners",
-    icon: "🏪",
     faqs: [
       {
         question: "How much does it cost to partner with DoorStep?",
@@ -119,22 +116,34 @@ export default function HelpPage() {
       <section className="py-12 px-6 border-b">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-6">
-            <Link href="/signup" className="flex items-center gap-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors">
-              <div className="text-3xl">📱</div>
+            <Link href="/signup" className="flex items-center gap-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors group">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
               <div>
                 <div className="font-semibold text-foreground">Contact Support</div>
                 <div className="text-sm text-muted-foreground">Get help from our team</div>
               </div>
             </Link>
-            <Link href="/about" className="flex items-center gap-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors">
-              <div className="text-3xl">📖</div>
+            <Link href="/about" className="flex items-center gap-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors group">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
               <div>
                 <div className="font-semibold text-foreground">About DoorStep</div>
                 <div className="text-sm text-muted-foreground">Learn more about us</div>
               </div>
             </Link>
-            <Link href="/blog" className="flex items-center gap-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors">
-              <div className="text-3xl">📰</div>
+            <Link href="/blog" className="flex items-center gap-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors group">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                </svg>
+              </div>
               <div>
                 <div className="font-semibold text-foreground">Latest Updates</div>
                 <div className="text-sm text-muted-foreground">Read our blog</div>
@@ -155,13 +164,12 @@ export default function HelpPage() {
               <button
                 key={category.name}
                 onClick={() => setActiveCategory(index)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all ${
+                className={`px-6 py-3 rounded-full font-semibold transition-all ${
                   activeCategory === index
                     ? "bg-foreground text-white shadow-lg"
                     : "bg-gray-100 text-foreground hover:bg-gray-200"
                 }`}
               >
-                <span className="text-xl">{category.icon}</span>
                 {category.name}
               </button>
             ))}
@@ -207,7 +215,11 @@ export default function HelpPage() {
           </p>
           <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
             <div className="bg-white rounded-2xl p-8 text-center">
-              <div className="text-4xl mb-4">📧</div>
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
               <h3 className="font-semibold text-foreground mb-2">Email Support</h3>
               <p className="text-muted-foreground mb-4">We'll respond within 24 hours</p>
               <a href="mailto:support@doorstep.com" className="text-primary font-semibold hover:underline">
@@ -215,7 +227,11 @@ export default function HelpPage() {
               </a>
             </div>
             <div className="bg-white rounded-2xl p-8 text-center">
-              <div className="text-4xl mb-4">💬</div>
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
               <h3 className="font-semibold text-foreground mb-2">Live Chat</h3>
               <p className="text-muted-foreground mb-4">Chat with us in real-time</p>
               <button className="text-primary font-semibold hover:underline">

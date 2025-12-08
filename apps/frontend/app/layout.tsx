@@ -11,6 +11,14 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "DoorStep - Campus Food Delivery",
   description: "Get food delivered to your dorm, library, or anywhere on campus. $0 delivery fee on your first order.",
+  icons: {
+    icon: [
+      { url: '/logos/logo-nobackground.jpeg', type: 'image/jpeg' },
+    ],
+    apple: [
+      { url: '/logos/logo-nobackground.jpeg', type: 'image/jpeg' },
+    ],
+  },
 }
 
 export default function RootLayout({
