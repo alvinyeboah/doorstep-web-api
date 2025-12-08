@@ -1,76 +1,201 @@
 import Link from "next/link"
 import Image from "next/image"
 
-const footerLinks = {
-  "For You": [
-    { label: "How it works", href: "/how-it-works" },
-    { label: "Help & Support", href: "/help" },
+const footerSections = {
+  product: [
+    { label: "How DoorStep Works", href: "/how-it-works" },
+    { label: "Features", href: "/features" },
+    { label: "Security", href: "/security" },
+    { label: "Pricing", href: "/pricing" },
   ],
-  "Get Started": [
-    { label: "Become a Stepper", href: "/signup" },
-    { label: "Partner with us", href: "/signup" },
+  company: [
+    { label: "About Us", href: "/about" },
+    { label: "Careers", href: "/careers" },
+    { label: "Press", href: "/press" },
+    { label: "Blog", href: "/blog" },
+  ],
+  support: [
+    { label: "Help Center", href: "/help" },
+    { label: "Contact Us", href: "/contact" },
+    { label: "API Documentation", href: "/docs" },
+    { label: "Status", href: "/status" },
+  ],
+  legal: [
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
+    { label: "Cookie Policy", href: "/cookies" },
+    { label: "GDPR", href: "/gdpr" },
   ],
 }
 
+const socialLinks = [
+  {
+    name: "Twitter",
+    href: "#",
+    icon: (
+      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 00-2.825-.775 10 10 0 012.825-.775c.526.13 1.04.33 1.527.6a9.817 9.817 0 006.49 3.258 4.051 4.051 0 00-1.77-1.646c-.007.136-.03.015-.272-.022-.408a10.003 10.003 0 003.278-3.089 3.918 3.918 0 00-1.612-1.113 4.817 4.817 0 00-2.59-4.362c-.358-.15-.735-.224-1.112-.224a10.011 10.011 0 00-3.272 3.089 10.003 10.003 0 00-3.28-3.089 10.005 10.005 0 00-3.278 3.089 3.98 3.98 0 00-1.612 1.113 10.005 10.005 0 002.588 4.399c.317.135.645.23.978.295a3.937 3.937 0 001.77 1.646 10.005 10.005 0 003.278 3.089 10.003 10.003 0 002.828-.775 10.011 10.011 0 003.272-3.089 10.005 10.005 0 002.588-4.399z" />
+      </svg>
+    ),
+  },
+  {
+    name: "LinkedIn",
+    href: "#",
+    icon: (
+      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.852 0-1.061.743-1.815 1.418-1.815a1.907 1.907 0 012.269 1.816v2.508h-1.718v3.098h1.718v8.019h3.554v-8.019c.004-3.919 2.267-5.984 5.418-5.984 1.444 0 2.624.269 3.438.555v3.448z" />
+        <path d="M7.877 20.452H11.33v-8.019H7.877v8.019z" />
+        <path d="M9.603 9.756a2.011 2.011 0 100-4.023 2.011 2.011 0 000 4.023z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Facebook",
+    href: "#",
+    icon: (
+      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-2.845h-3.047c-.38 0-.75-.197-.957-.537-.747-.363-1.104-.057-.25-.574-1.582-1.892-1.611-.04-.417-.12-.806-.25-1.358-.337-1.288.231-2.003.913-2.003 2.173v1.113h-1.703c-.004.073-.236.804-.236 1.413 0 2.173 1.362 2.173 3.475v2.845h-3.025c-.025.293-.168 2.033-.168 2.644 0 .612.042 1.776.245 1.758 1.384-.002.29-.019 1.016-.019 1.257v2.515c.257.18.466.75.257 1.367zm-14.352-.257c0 .608-.007.917-.025 1.333v5.073c0 .414-.007.721-.025 1.333v-8.406c0-.414.007-.721.025-1.333.025-1.758 0-1.942.534-3.442 1.892-3.442 1.054 0 1.515.447 1.892 1.083v2.316c-.333-.18-.69-.272-1.083-.272-1.083 0-1.531.761-1.531 2.198 0 1.198.752 2.198 2.069 2.198 1.258 0 1.828-.259 2.813-.773 0 1.023.775 1.877 2.069 2.083 1.258.333 1.828-.259 2.813-.773v4.083c0 .414.007.721.025 1.333.025 1.758 0 1.942-.534 3.442-1.892 3.442-1.054 0-1.515-.447-1.892-1.083v-2.316c.333.18.69.272 1.083.272 1.083 0 1.531-.761 1.531-2.198 0-1.198-.752-2.198-2.069-2.198-1.258 0-1.828.259-2.813.773z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Instagram",
+    href: "#",
+    icon: (
+      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.854.219 2.515.625 3.19 1.258.217.126.689.656 1.258 1.19 1.754 1.857 4.489 2.083 5.855.196 2.364-.165 3.494-.775 3.494-.775.169-.032.307-.4.415-.608-.148-.219-.365-.488-.697-.737-.432-.337-.517-.594-.517-.594-.18-.127-.352-.175-.402-.057-.233.075-.281.395a6.215 6.215 0 01-.884 2.835c-.604 2.637-2.374 5.374-4.633 5.974-2.259.604-5.29-1.18-7.549-2.684a6.216 6.216 0 01-3.36-5.975c-.594-2.637.057-5.381.604-5.974.13-.33.273-.608.517-.884.369.348.702.348 1.052-.084 1.347-.11 4.331-.52 5.855-.266 2.234-.259 4.083-.604 5.855-.266 1.48-.352 3.317-.604 4.463-.266z" />
+        <path d="M15.53 8.25a2.25 2.25 0 112.5-2.25 2.25 2.25 0 01-2.5 2.25z" />
+        <circle cx="12" cy="12" r="2.25" />
+      </svg>
+    ),
+  },
+]
+
 export function SiteFooter() {
   return (
-    <footer className="bg-foreground text-white py-16 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-          <div>
-            <Link href="/" className="flex items-center mb-6">
-              <Image
-                src="/logos/logo-white.jpeg"
-                alt="DoorStep"
-                width={140}
-                height={45}
-                className="h-12 w-auto"
-              />
-            </Link>
-            <p className="text-white/60 text-sm mb-6">Campus food delivery made simple</p>
-            <div className="flex gap-4">
-              <Link href="#" className="hover:opacity-80 transition-opacity">
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
-                </svg>
+    <footer className="bg-gradient-to-b from-gray-50 to-white border-t border-gray-200/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Content */}
+        <div className="py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-16">
+            {/* Brand Column */}
+            <div className="lg:col-span-2">
+              <Link href="/" className="flex items-center mb-6">
+                <div className="relative">
+                  <Image
+                    src="/logos/logo-nobackground.jpeg"
+                    alt="DoorStep"
+                    width={160}
+                    height={50}
+                    className="h-12 w-auto"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-teal-600/20 rounded-lg blur-md"></div>
+                </div>
               </Link>
-              <Link href="#" className="hover:opacity-80 transition-opacity">
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z" />
-                </svg>
-              </Link>
-              <Link href="#" className="hover:opacity-80 transition-opacity">
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z" />
-                </svg>
-              </Link>
-            </div>
-          </div>
-          {Object.entries(footerLinks).map(([title, links]) => (
-            <div key={title}>
-              <h3 className="font-semibold mb-4 text-sm">{title}</h3>
-              <ul className="space-y-3">
-                {links.map((link) => (
-                  <li key={link.label}>
-                    <Link href={link.href} className="text-sm text-white/70 hover:text-white transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
+              <p className="text-gray-600 text-sm leading-relaxed mb-6 max-w-sm">
+                Campus food delivery made simple. Order from your favorite campus restaurants and get them delivered by fellow students.
+              </p>
+
+              {/* Social Links */}
+              <div className="flex items-center space-x-4">
+                {socialLinks.map((social) => (
+                  <Link
+                    key={social.name}
+                    href={social.href}
+                    className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 group"
+                    aria-label={social.name}
+                  >
+                    {social.icon}
+                  </Link>
                 ))}
-              </ul>
+              </div>
+
+              {/* App Store Buttons */}
+              <div className="flex flex-col space-y-3 mt-8">
+                <button className="group relative bg-black text-white px-4 py-2.5 rounded-xl flex items-center justify-center space-x-3 hover:bg-gray-800 transition-colors duration-200 shadow-sm hover:shadow-md">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 3.31l1.41 1.41c1.65-.92 3.49-2.1 5.16-3.37l1.41 1.41c-.85 1.34-2.06 2.21-3.29 3.05zm0-15c.82-1.24 1.71-2.45 3.05-3.31l-1.41-1.41c-1.65.92-3.49 2.1-5.16 3.37l-1.41-1.41c.85-1.34 2.06-2.21 3.29-3.05z"/>
+                  </svg>
+                  <div className="text-left">
+                    <div className="text-xs opacity-80">Download on the</div>
+                    <div className="text-sm font-semibold">App Store</div>
+                  </div>
+                </button>
+
+                <button className="group relative bg-black text-white px-4 py-2.5 rounded-xl flex items-center justify-center space-x-3 hover:bg-gray-800 transition-colors duration-200 shadow-sm hover:shadow-md">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3.609 1.814L13.792 12 3.61 22.186 3.609 1.814zm.315 11.609v-7.782L11.513 12.03 3.924 13.423zm7.844 11.609h7.832v-7.782L12.452 12.03l-7.622 1.393z"/>
+                  </svg>
+                  <div className="text-left">
+                    <div className="text-xs opacity-80">Get it on</div>
+                    <div className="text-sm font-semibold">Google Play</div>
+                  </div>
+                </button>
+              </div>
             </div>
-          ))}
-        </div>
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-6 text-sm text-white/60">
-            <Link href="/terms" className="hover:text-white transition-colors">
-              Terms
-            </Link>
-            <Link href="/privacy" className="hover:text-white transition-colors">
-              Privacy
-            </Link>
+
+            {/* Footer Sections */}
+            {Object.entries(footerSections).map(([title, links]) => (
+              <div key={title}>
+                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
+                  {title}
+                </h3>
+                <ul className="space-y-3">
+                  {links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-gray-600 hover:text-emerald-600 transition-colors duration-200"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-          <p className="text-sm text-white/40">© 2025 DoorStep. All rights reserved.</p>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-8 border-t border-gray-200">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">10K+</div>
+              <div className="text-sm text-gray-600">Active Users</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">500+</div>
+              <div className="text-sm text-gray-600">Partner Restaurants</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">1M+</div>
+              <div className="text-sm text-gray-600">Meals Delivered</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">50+</div>
+              <div className="text-sm text-gray-600">University Campuses</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="py-8 border-t border-gray-200">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center space-x-6 text-sm text-gray-600">
+              <span>© 2025 DoorStep. All rights reserved.</span>
+              <span className="text-gray-400">•</span>
+              <Link href="/privacy" className="hover:text-emerald-600 transition-colors duration-200">
+                Privacy
+              </Link>
+              <span className="text-gray-400">•</span>
+              <Link href="/terms" className="hover:text-emerald-600 transition-colors duration-200">
+                Terms
+              </Link>
+            </div>
+            <div className="text-sm text-gray-600">
+              Made for students, by students
+            </div>
+          </div>
         </div>
       </div>
     </footer>

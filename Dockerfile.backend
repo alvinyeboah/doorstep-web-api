@@ -83,9 +83,9 @@ USER nestjs
 EXPOSE 3000
 
 # Docker Healthcheck
-# Uses root endpoint which performs basic health check
+# Uses /api endpoint which performs basic health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD curl -f http://localhost:3000/ || exit 1
+  CMD curl -f http://localhost:3000/api || exit 1
 
 # Change to backend directory for proper module resolution
 WORKDIR /app/apps/backend
