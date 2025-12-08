@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ScrollReveal } from "@/components/animations/scroll-reveal"
+import { FadeIn } from "@/components/animations/fade-in"
 
 export default function BecomeStepperPage() {
   return (
@@ -9,37 +11,45 @@ export default function BecomeStepperPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
-                <span className="text-sm font-semibold text-primary">Earn on Your Schedule</span>
-              </div>
-              <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-                Become a Stepper,
-                <span className="block text-primary">earn on your time</span>
-              </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                Join thousands of students earning flexible income delivering food and essentials around campus. Work when you want, where you want.
-              </p>
-              <div className="flex flex-wrap items-center gap-4">
-                <Link href="/signup">
-                  <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-full px-8 py-6 text-lg font-semibold shadow-lg">
-                    Start Earning Today
-                  </Button>
-                </Link>
-                <div className="text-sm text-muted-foreground">
-                  Already signed up? <Link href="/login" className="font-semibold text-primary hover:underline">Sign in</Link>
+              <FadeIn delay={0.1}>
+                <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
+                  <span className="text-sm font-semibold text-primary">Earn on Your Schedule</span>
                 </div>
-              </div>
+              </FadeIn>
+              <ScrollReveal delay={0.2}>
+                <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
+                  Become a Stepper,
+                  <span className="block bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">earn on your time</span>
+                </h1>
+              </ScrollReveal>
+              <FadeIn delay={0.3}>
+                <p className="text-xl text-muted-foreground leading-relaxed">
+                  Join thousands of students earning flexible income delivering food and essentials around campus. Work when you want, where you want.
+                </p>
+              </FadeIn>
+              <FadeIn delay={0.4}>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link href="/signup">
+                    <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                      Start Earning Today
+                    </Button>
+                  </Link>
+                  <div className="text-sm text-muted-foreground">
+                    Already signed up? <Link href="/login" className="font-semibold text-primary hover:underline">Sign in</Link>
+                  </div>
+                </div>
+              </FadeIn>
             </div>
-            <div className="relative">
-              <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+            <FadeIn delay={0.3} className="relative">
+              <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl group">
                 <img
                   src="https://images.unsplash.com/photo-1607013407627-6ee81fa44aea?w=800&h=600&fit=crop&q=90"
                   alt="Delivery person on campus"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
               </div>
-            </div>
+            </FadeIn>
           </div>
         </div>
       </section>
