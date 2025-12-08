@@ -6,6 +6,7 @@ import {
   Body,
   Query,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -323,5 +324,61 @@ export class StepperController {
   })
   async getCommissionHistory(@CurrentUser() user: any) {
     return this.stepperService.getCommissionHistory(user.id);
+  }
+
+  @Get('nearby')
+  @ApiOperation({
+    summary: 'Get nearby available steppers',
+    description:
+      'Find available and verified steppers near a location for delivery. Public endpoint - no authentication required.',
+  })
+  @ApiQuery({
+    name: 'latitude',
+    description: 'Latitude of the location',
+    example: 5.7597,
+    required: true,
+  })
+  @ApiQuery({
+    name: 'longitude',
+    description: 'Longitude of the location',
+    example: -0.227,
+    required: true,
+  })
+  @ApiQuery({
+    name: 'radius',
+    description: 'Search radius in kilometers (default: 10km)',
+    example: 10,
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Nearby steppers retrieved successfully, sorted by distance',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - invalid coordinates',
+  })
+  async getNearbySteppers(
+    @Query('latitude') latitude: string,
+    @Query('longitude') longitude: string,
+    @Query('radius') radius?: string,
+  ) {
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    const radiusKm = radius ? parseFloat(radius) : 10;
+
+    if (isNaN(lat) || isNaN(lng)) {
+      throw new BadRequestException('Invalid latitude or longitude');
+    }
+
+    if (lat < -90 || lat > 90) {
+      throw new BadRequestException('Latitude must be between -90 and 90');
+    }
+
+    if (lng < -180 || lng > 180) {
+      throw new BadRequestException('Longitude must be between -180 and 180');
+    }
+
+    return this.stepperService.getNearbySteppers(lat, lng, radiusKm);
   }
 }

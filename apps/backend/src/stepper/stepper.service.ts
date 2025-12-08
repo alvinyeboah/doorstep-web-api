@@ -12,6 +12,12 @@ import {
   WithdrawalRequestDto,
 } from './dto/stepper.dto';
 import { createPaginatedResponse } from '../common/dto/pagination.dto';
+import {
+  calculateDistance,
+  geoJSONToLocation,
+  type Location,
+  type GeoJSONPoint,
+} from '../common/utils/geolocation.utils';
 
 @Injectable()
 export class StepperService {
@@ -307,5 +313,56 @@ export class StepperService {
     });
 
     return history;
+  }
+
+  async getNearbySteppers(latitude: number, longitude: number, radiusKm = 10) {
+    const origin: Location = { latitude, longitude };
+
+    // Find all available and verified steppers
+    const steppers = await this.prisma.stepper.findMany({
+      where: {
+        available: true,
+        verified: true,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+    // Filter steppers with location data and calculate distances
+    const steppersWithDistance = steppers
+      .filter((stepper: any) => stepper.location !== null)
+      .map((stepper: any) => {
+        const stepperLocation = geoJSONToLocation(
+          stepper.location as GeoJSONPoint,
+        );
+        const distance = calculateDistance(origin, stepperLocation);
+
+        return {
+          id: stepper.id,
+          name: stepper.user.name,
+          phone: stepper.user.phone,
+          rating: stepper.rating,
+          pictureUrl: stepper.pictureUrl,
+          location: stepper.location,
+          distance: distance,
+          verified: stepper.verified,
+        };
+      })
+      .filter((stepper: any) => stepper.distance <= radiusKm)
+      .sort((a: any, b: any) => a.distance - b.distance);
+
+    return {
+      steppers: steppersWithDistance,
+      count: steppersWithDistance.length,
+      searchRadius: radiusKm,
+      searchLocation: { latitude, longitude },
+    };
   }
 }

@@ -181,4 +181,43 @@ export class ProductsService {
 
     return products;
   }
+
+  async getAllProducts(page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where: { available: true },
+        include: {
+          vendor: {
+            select: {
+              id: true,
+              shopName: true,
+              logoUrl: true,
+              address: true,
+              location: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.product.count({
+        where: { available: true },
+      }),
+    ]);
+
+    return {
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrevious: page > 1,
+      },
+    };
+  }
 }
