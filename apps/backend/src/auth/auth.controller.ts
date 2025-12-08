@@ -14,12 +14,13 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import { AuthGuard } from './guards/auth.guard';
 import { Public } from './decorators/public.decorator';
 import { AuthService } from './services/auth.service';
 
-@ApiTags('Authentication')
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
@@ -31,11 +32,53 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create a new user account',
-    description: 'Creates a user account with Better Auth. Automatically creates linked user_profiles record.',
+    description: 'Creates a user account with Better Auth. User can then register for specific role (Vendor, Customer, Stepper).',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['email', 'password', 'name'],
+      properties: {
+        email: {
+          type: 'string',
+          format: 'email',
+          example: 'user@example.com',
+          description: 'User email address',
+        },
+        password: {
+          type: 'string',
+          format: 'password',
+          example: 'SecurePass123!',
+          description: 'User password (min 8 characters)',
+          minLength: 8,
+        },
+        name: {
+          type: 'string',
+          example: 'John Doe',
+          description: 'User full name',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 201,
     description: 'User created successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', example: 'clp123abc456def' },
+            email: { type: 'string', example: 'user@example.com' },
+            name: { type: 'string', example: 'John Doe' },
+            role: { type: 'string', example: 'CUSTOMER', enum: ['VENDOR', 'CUSTOMER', 'STEPPER'] },
+          },
+        },
+        message: { type: 'string', example: 'User created successfully' },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -52,9 +95,45 @@ export class AuthController {
     summary: 'Sign in to an existing account',
     description: 'Authenticates user and returns session cookie.',
   })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['email', 'password'],
+      properties: {
+        email: {
+          type: 'string',
+          format: 'email',
+          example: 'user@example.com',
+          description: 'User email address',
+        },
+        password: {
+          type: 'string',
+          format: 'password',
+          example: 'SecurePass123!',
+          description: 'User password',
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: 200,
     description: 'User signed in successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', example: 'clp123abc456def' },
+            email: { type: 'string', example: 'user@example.com' },
+            name: { type: 'string', example: 'John Doe' },
+            role: { type: 'string', example: 'CUSTOMER', enum: ['VENDOR', 'CUSTOMER', 'STEPPER'] },
+          },
+        },
+        message: { type: 'string', example: 'User signed in successfully' },
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -74,6 +153,22 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Google sign-in completed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', example: 'clp123abc456def' },
+            email: { type: 'string', example: 'user@example.com' },
+            name: { type: 'string', example: 'John Doe' },
+            role: { type: 'string', example: 'CUSTOMER' },
+          },
+        },
+        message: { type: 'string', example: 'Google sign-in successful' },
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -88,11 +183,37 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get current user profile',
-    description: 'Returns the authenticated user with linked user_profiles data',
+    description: 'Returns the authenticated user information',
   })
   @ApiResponse({
     status: 200,
     description: 'User profile retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', example: 'clp123abc456def' },
+            email: { type: 'string', example: 'user@example.com' },
+            name: { type: 'string', example: 'John Doe' },
+            role: { type: 'string', example: 'CUSTOMER', enum: ['VENDOR', 'CUSTOMER', 'STEPPER'] },
+            verified: { type: 'boolean', example: true },
+          },
+        },
+        session: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            expiresAt: { type: 'string', format: 'date-time' },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
   })
   async getCurrentUser(@Headers() headers: Record<string, any>) {
     // For now, verify session and return user
@@ -110,6 +231,13 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'User signed out successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'User signed out successfully' },
+      },
+    },
   })
   async signOut(@Headers() headers: Record<string, any>) {
     return await this.authService.signOut(headers);

@@ -46,12 +46,12 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .addBearerAuth()
     .addTag('auth', 'Authentication endpoints')
-    .addTag('users', 'User management')
     .addTag('products', 'Product management')
     .addTag('orders', 'Order management')
     .addTag('vendors', 'Vendor management')
     .addTag('steppers', 'Delivery steppers')
     .addTag('customers', 'Customer management')
+    .addTag('upload', 'File upload endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
