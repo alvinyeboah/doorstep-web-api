@@ -4,6 +4,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { ScrollReveal } from "@/components/animations/scroll-reveal"
+import { FadeIn } from "@/components/animations/fade-in"
 
 export function HeroSection() {
   const [address, setAddress] = useState("")
@@ -13,8 +15,8 @@ export function HeroSection() {
 
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
+        <div className="absolute top-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
       {/* Content */}
@@ -22,67 +24,79 @@ export function HeroSection() {
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center w-full">
           {/* Left content */}
           <div className="text-left space-y-8">
-            <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
-              <span className="text-sm font-semibold text-primary">Campus Food Delivery</span>
-            </div>
+            <FadeIn delay={0.1}>
+              <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
+                <span className="text-sm font-semibold text-primary">Campus Food Delivery</span>
+              </div>
+            </FadeIn>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight">
-              Everything you crave,
-              <span className="block text-primary">delivered.</span>
-            </h1>
+            <ScrollReveal delay={0.2}>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight">
+                Everything you crave,
+                <span className="block bg-gradient-to-r from-primary via-orange-500 to-primary bg-clip-text text-transparent animate-gradient">
+                  delivered.
+                </span>
+              </h1>
+            </ScrollReveal>
 
-            <p className="text-xl text-muted-foreground max-w-lg">
-              Your favorite campus restaurants and stores, delivered right to your dorm in minutes.
-            </p>
+            <FadeIn delay={0.4}>
+              <p className="text-xl text-muted-foreground max-w-lg">
+                Your favorite campus restaurants and stores, delivered right to your dorm in minutes.
+              </p>
+            </FadeIn>
 
             {/* Address input */}
-            <div className="max-w-lg">
-              <div className="flex items-center gap-2 bg-white rounded-2xl p-2 shadow-lg border border-gray-100">
-                <Input
-                  type="text"
-                  placeholder="Enter your delivery address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground placeholder:text-muted-foreground text-base px-4"
-                />
-                <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 h-12 font-semibold whitespace-nowrap">
-                  Find Food
-                </Button>
+            <FadeIn delay={0.5}>
+              <div className="max-w-lg">
+                <div className="flex items-center gap-2 bg-white rounded-2xl p-2 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+                  <Input
+                    type="text"
+                    placeholder="Enter your delivery address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground placeholder:text-muted-foreground text-base px-4"
+                  />
+                  <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 h-12 font-semibold whitespace-nowrap hover:shadow-lg transition-all hover:scale-105">
+                    Find Food
+                  </Button>
+                </div>
+                <Link href="/login" className="inline-block mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Sign in for saved addresses
+                </Link>
               </div>
-              <Link href="/login" className="inline-block mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Sign in for saved addresses
-              </Link>
-            </div>
+            </FadeIn>
           </div>
 
           {/* Right image */}
-          <div className="relative hidden lg:block">
-            <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+          <FadeIn delay={0.3} className="relative hidden lg:block">
+            <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl group">
               <img
                 src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=500&fit=crop&q=90"
                 alt="Delicious food"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
 
             {/* Floating card */}
-            <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-6 max-w-xs">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100&h=100&fit=crop&q=80"
-                    alt="Restaurant"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-foreground">Campus Eats</div>
-                  <div className="text-sm text-muted-foreground">15-20 min • $0 delivery</div>
+            <FadeIn delay={0.6}>
+              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-6 max-w-xs hover:shadow-2xl transition-shadow">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100&h=100&fit=crop&q=80"
+                      alt="Restaurant"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-foreground">Campus Eats</div>
+                    <div className="text-sm text-muted-foreground">15-20 min • $0 delivery</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </FadeIn>
+          </FadeIn>
         </div>
       </div>
     </section>
