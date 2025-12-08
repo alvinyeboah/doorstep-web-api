@@ -8,25 +8,84 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-amber-50 via-white to-blue-50 pt-32 pb-20 px-6">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
+      <section className="relative bg-white pt-32 pb-20 px-6 overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-blue-50 to-transparent rounded-full -translate-y-1/2 translate-x-1/3 opacity-60" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-orange-50 to-transparent rounded-full translate-y-1/2 -translate-x-1/3 opacity-60" />
+        </div>
+
+        <div className="max-w-5xl mx-auto text-center space-y-8 relative">
           <FadeIn delay={0.1}>
-            <div className="inline-block px-4 py-2 bg-primary/10 rounded-full mb-4">
-              <span className="text-sm font-semibold text-primary">About DoorStep</span>
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 rounded-full mb-4 border border-gray-200">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <span className="text-sm font-semibold text-gray-700 tracking-wide">ABOUT DOORSTEP</span>
             </div>
           </FadeIn>
           <ScrollReveal delay={0.2}>
-            <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-              Transforming campus life,
-              <span className="block text-primary bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
-                one delivery at a time
+            <h1 className="text-6xl md:text-7xl font-bold text-foreground leading-[1.1]">
+              Transforming<br />
+              <span className="relative inline-block">
+                <span className="bg-gradient-to-r from-primary via-orange-500 to-secondary bg-clip-text text-transparent">
+                  campus life
+                </span>
+                <svg className="absolute -bottom-2 left-0 w-full" height="12" viewBox="0 0 300 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 10C77.3333 3.33333 227.2 -2.4 298 6" stroke="url(#gradient)" strokeWidth="3" strokeLinecap="round"/>
+                  <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="rgb(249 115 22)" />
+                      <stop offset="100%" stopColor="rgb(236 72 153)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
               </span>
             </h1>
           </ScrollReveal>
           <FadeIn delay={0.4}>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              We're building the future of campus commerce, connecting students with their favorite local spots while creating flexible earning opportunities.
+            <p className="text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
+              Building the future of campus commerce, connecting students with their favorite local spots while creating flexible earning opportunities.
             </p>
+          </FadeIn>
+          <FadeIn delay={0.5}>
+            <div className="flex items-center justify-center gap-8 pt-4 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-foreground">50K+</div>
+                  <div className="text-gray-500">Students</div>
+                </div>
+              </div>
+              <div className="w-px h-12 bg-gray-200" />
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-secondary" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+                    <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-foreground">200+</div>
+                  <div className="text-gray-500">Partners</div>
+                </div>
+              </div>
+              <div className="w-px h-12 bg-gray-200" />
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-foreground">1M+</div>
+                  <div className="text-gray-500">Deliveries</div>
+                </div>
+              </div>
+            </div>
           </FadeIn>
         </div>
       </section>

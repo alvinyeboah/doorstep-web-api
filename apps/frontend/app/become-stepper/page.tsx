@@ -7,47 +7,81 @@ export default function BecomeStepperPage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary/5 via-white to-secondary/5 pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
+      <section className="relative bg-gradient-to-br from-orange-500 via-primary to-secondary pt-32 pb-20 px-6 overflow-hidden">
+        {/* Animated background pattern */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(30deg, rgba(255,255,255,.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,.1) 87.5%, rgba(255,255,255,.1)), linear-gradient(150deg, rgba(255,255,255,.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,.1) 87.5%, rgba(255,255,255,.1)), linear-gradient(30deg, rgba(255,255,255,.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,.1) 87.5%, rgba(255,255,255,.1)), linear-gradient(150deg, rgba(255,255,255,.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,.1) 87.5%, rgba(255,255,255,.1))',
+            backgroundSize: '80px 140px',
+            backgroundPosition: '0 0, 0 0, 40px 70px, 40px 70px'
+          }} />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-10">
               <FadeIn delay={0.1}>
-                <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
-                  <span className="text-sm font-semibold text-primary">Earn on Your Schedule</span>
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
+                  <span className="text-sm font-bold text-white tracking-wider">FLEXIBLE EARNINGS</span>
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 </div>
               </FadeIn>
               <ScrollReveal delay={0.2}>
-                <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-                  Become a Stepper,
-                  <span className="block bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">earn on your time</span>
+                <h1 className="text-6xl md:text-7xl font-bold text-white leading-[1.1]">
+                  Become a<br />
+                  <span className="relative inline-block">
+                    Stepper
+                    <div className="absolute -bottom-3 left-0 w-full h-1 bg-white/50 rounded-full" />
+                  </span>
                 </h1>
               </ScrollReveal>
               <FadeIn delay={0.3}>
-                <p className="text-xl text-muted-foreground leading-relaxed">
-                  Join thousands of students earning flexible income delivering food and essentials around campus. Work when you want, where you want.
+                <p className="text-2xl text-white/90 leading-relaxed font-light">
+                  Join thousands of students earning flexible income delivering food and essentials around campus.
                 </p>
               </FadeIn>
               <FadeIn delay={0.4}>
-                <div className="flex flex-wrap items-center gap-4">
-                  <Link href="/signup">
-                    <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105">
-                      Start Earning Today
-                    </Button>
-                  </Link>
-                  <div className="text-sm text-muted-foreground">
-                    Already signed up? <Link href="/login" className="font-semibold text-primary hover:underline">Sign in</Link>
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Link href="/signup">
+                      <Button className="bg-white text-primary hover:bg-gray-50 rounded-full px-10 py-7 text-lg font-bold shadow-2xl hover:shadow-white/20 transition-all hover:scale-105">
+                        Start Earning Today
+                      </Button>
+                    </Link>
+                    <Link href="/login" className="text-white font-semibold hover:underline px-6 py-3 rounded-full hover:bg-white/10 transition-colors">
+                      Already signed up? Sign in
+                    </Link>
+                  </div>
+                  <div className="flex gap-8 text-white/90">
+                    <div className="flex flex-col">
+                      <div className="text-3xl font-bold">$15-25</div>
+                      <div className="text-sm font-medium text-white/70">Per hour</div>
+                    </div>
+                    <div className="w-px bg-white/30" />
+                    <div className="flex flex-col">
+                      <div className="text-3xl font-bold">Weekly</div>
+                      <div className="text-sm font-medium text-white/70">Payouts</div>
+                    </div>
+                    <div className="w-px bg-white/30" />
+                    <div className="flex flex-col">
+                      <div className="text-3xl font-bold">100%</div>
+                      <div className="text-sm font-medium text-white/70">Keep tips</div>
+                    </div>
                   </div>
                 </div>
               </FadeIn>
             </div>
             <FadeIn delay={0.3} className="relative">
-              <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl group">
-                <img
-                  src="https://images.unsplash.com/photo-1607013407627-6ee81fa44aea?w=800&h=600&fit=crop&q=90"
-                  alt="Delivery person on campus"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/10 backdrop-blur-3xl rounded-[3rem] transform rotate-6" />
+                <div className="relative w-full h-[550px] rounded-[3rem] overflow-hidden shadow-2xl group border-4 border-white/20">
+                  <img
+                    src="https://images.unsplash.com/photo-1607013407627-6ee81fa44aea?w=800&h=600&fit=crop&q=90"
+                    alt="Delivery person on campus"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent" />
+                </div>
               </div>
             </FadeIn>
           </div>

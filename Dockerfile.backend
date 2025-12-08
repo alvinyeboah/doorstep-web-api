@@ -39,12 +39,14 @@ COPY apps/backend/prisma ./apps/backend/prisma
 # This copies ONLY production dependencies, properly resolved
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=backend --prod /prod
 
-# Generate Prisma Client in the deployed location
-WORKDIR /prod
-RUN pnpm exec prisma generate
-
 # Copy built application into deployed location
+WORKDIR /prod
 COPY --from=builder /app/apps/backend/dist ./dist
+
+# Copy the generated Prisma Client from builder stage
+# The Prisma Client was already generated in the builder stage
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Stage 4: Final production image
 FROM node:20-alpine AS production
