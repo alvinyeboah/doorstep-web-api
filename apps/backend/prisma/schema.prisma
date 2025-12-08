@@ -281,15 +281,19 @@ model Rating {
 }
 
 model Wallet {
-  id             String   @id @default(uuid())
-  stepperId      String   @unique @map("stepper_id")
-  balance        Float    @default(0)
-  depositAmount  Float    @default(0) @map("deposit_amount")
-  depositGrowth  Float    @default(0) @map("deposit_growth")
-  totalEarned    Float    @default(0) @map("total_earned")
-  totalWithdrawn Float    @default(0) @map("total_withdrawn")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id                   String    @id @default(uuid())
+  stepperId            String    @unique @map("stepper_id")
+  balance              Float     @default(0)
+  depositAmount        Float     @default(0) @map("deposit_amount")
+  depositGrowth        Float     @default(0) @map("deposit_growth")
+  totalEarned          Float     @default(0) @map("total_earned")
+  totalWithdrawn       Float     @default(0) @map("total_withdrawn")
+  investmentReturns    Float     @default(0) @map("investment_returns") // Total returns from mutual fund
+  lastGrowthUpdate     DateTime? @map("last_growth_update") // Last time investment growth was calculated
+  annualInterestRate   Float     @default(0.08) @map("annual_interest_rate") // 8% default annual rate
+  investmentStartDate  DateTime? @map("investment_start_date") // When deposit was invested
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
 
   stepper Stepper @relation(fields: [stepperId], references: [id], onDelete: Cascade)
 

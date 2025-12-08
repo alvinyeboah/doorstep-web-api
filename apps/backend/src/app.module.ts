@@ -12,6 +12,7 @@ import { OrdersModule } from './orders/orders.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SuperAdminModule } from './super-admin/super-admin.module';
 import { UploadModule } from './upload/upload.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { UploadModule } from './upload/upload.module';
     NotificationsModule,
     SuperAdminModule,
     UploadModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -20,6 +20,7 @@ import {
   UpdateOrderStatusDto,
   RateOrderDto,
 } from './dto/order.dto';
+import { CalculateDeliveryFeeDto } from './dto/calculate-fee.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -263,5 +264,39 @@ export class OrdersController {
   })
   async cancelOrder(@CurrentUser() user: any, @Param('id') id: string) {
     return this.ordersService.cancelOrder(user.id, id);
+  }
+
+  @Post('calculate-fee')
+  @ApiOperation({
+    summary: 'Calculate delivery fee',
+    description:
+      'Calculate delivery fee based on distance between vendor and customer location',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Delivery fee calculated successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        distance: { type: 'string', example: '2.5 km' },
+        deliveryFee: { type: 'number', example: 7 },
+        currency: { type: 'string', example: 'GHC' },
+        breakdown: {
+          type: 'object',
+          properties: {
+            baseFee: { type: 'number', example: 7 },
+            additionalFee: { type: 'number', example: 0 },
+            totalFee: { type: 'number', example: 7 },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - invalid coordinates',
+  })
+  async calculateDeliveryFee(@Body() dto: CalculateDeliveryFeeDto) {
+    return this.ordersService.calculateFee(dto);
   }
 }

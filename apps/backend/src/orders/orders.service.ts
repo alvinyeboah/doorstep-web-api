@@ -10,6 +10,11 @@ import {
   UpdateOrderStatusDto,
   RateOrderDto,
 } from './dto/order.dto';
+import { CalculateDeliveryFeeDto } from './dto/calculate-fee.dto';
+import {
+  calculateDistance,
+  calculateDeliveryFee,
+} from '../common/utils/geolocation.utils';
 
 @Injectable()
 export class OrdersService {
@@ -161,14 +166,51 @@ export class OrdersService {
         stepper: {
           include: {
             user: true,
+            wallet: true,
           },
         },
       },
     });
 
+    // Auto-calculate and credit commission when order is DELIVERED
+    if (dto.status === 'DELIVERED' && updated.stepperId) {
+      const deliveryFee = updated.deliveryFee || 5.0; // Default GHC 5 if not set
+      const commission = deliveryFee * 0.8; // 80% to stepper
+
+      // Check if commission already exists for this order
+      const existingCommission = await this.prisma.commissionHistory.findUnique(
+        {
+          where: { orderId: updated.id },
+        },
+      );
+
+      if (!existingCommission) {
+        // Create commission record
+        await this.prisma.commissionHistory.create({
+          data: {
+            stepperId: updated.stepperId,
+            orderId: updated.id,
+            amount: commission,
+          },
+        });
+
+        // Update stepper wallet
+        await this.prisma.wallet.update({
+          where: { stepperId: updated.stepperId },
+          data: {
+            balance: { increment: commission },
+            totalEarned: { increment: commission },
+          },
+        });
+      }
+    }
+
     return {
       order: updated,
-      message: 'Order status updated',
+      message:
+        dto.status === 'DELIVERED' && updated.stepperId
+          ? `Order status updated and GHC ${(updated.deliveryFee || 5.0) * 0.8} commission credited to stepper`
+          : 'Order status updated',
     };
   }
 
@@ -338,6 +380,35 @@ export class OrdersService {
     return {
       order: updated,
       message: 'Order cancelled successfully',
+    };
+  }
+
+  /**
+   * Calculate delivery fee based on distance between vendor and customer
+   */
+  async calculateFee(dto: CalculateDeliveryFeeDto) {
+    const vendorLocation = {
+      latitude: dto.vendorLat,
+      longitude: dto.vendorLng,
+    };
+
+    const customerLocation = {
+      latitude: dto.customerLat,
+      longitude: dto.customerLng,
+    };
+
+    const distance = calculateDistance(vendorLocation, customerLocation);
+    const fee = calculateDeliveryFee(distance);
+
+    return {
+      distance: `${distance} km`,
+      deliveryFee: fee,
+      currency: 'GHC',
+      breakdown: {
+        baseFee: distance <= 1 ? 5 : distance <= 3 ? 7 : 10,
+        additionalFee: distance > 5 ? (fee - 10) : 0,
+        totalFee: fee,
+      },
     };
   }
 }
