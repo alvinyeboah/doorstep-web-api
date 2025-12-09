@@ -26,11 +26,11 @@ export class StepperService {
   constructor(
     private prisma: PrismaService,
     private plunkService: PlunkService,
-  ) {}
+  ) { }
 
   async register(userId: string, dto: RegisterStepperDto) {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId, deletedAt: null },
+      where: { id: userId },
     });
 
     if (!user) {
@@ -42,7 +42,7 @@ export class StepperService {
     }
 
     const existingStepper = await this.prisma.stepper.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
     });
 
     if (existingStepper) {
@@ -91,7 +91,7 @@ export class StepperService {
 
   async updateProfile(userId: string, dto: UpdateStepperDto) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
     });
 
     if (!stepper) {
@@ -111,7 +111,7 @@ export class StepperService {
 
   async getProfile(userId: string) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
       include: {
         user: {
           select: {
@@ -140,7 +140,7 @@ export class StepperService {
 
   async updateAvailability(userId: string, available: boolean) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
     });
 
     if (!stepper) {
@@ -160,7 +160,7 @@ export class StepperService {
 
   async getOrders(userId: string, status?: string, page = 1, limit = 20) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
     });
 
     if (!stepper) {
@@ -187,9 +187,6 @@ export class StepperService {
             },
           },
           vendor: {
-            where: {
-              deletedAt: null,
-            },
             select: {
               id: true,
               shopName: true,
@@ -218,7 +215,7 @@ export class StepperService {
   // Wallet Operations
   async getWallet(userId: string) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
       include: { wallet: true },
     });
 
@@ -231,7 +228,7 @@ export class StepperService {
 
   async makeDeposit(userId: string, dto: DepositDto) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
       include: { wallet: true },
     });
 
@@ -256,7 +253,7 @@ export class StepperService {
 
   async requestWithdrawal(userId: string, dto: WithdrawalRequestDto) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
       include: { wallet: true, user: true },
     });
 
@@ -268,8 +265,12 @@ export class StepperService {
     const request = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Get current wallet state
       const wallet = await tx.wallet.findUnique({
-        where: { id: stepper.wallet.id },
+        where: { id: stepper.wallet!.id },
       });
+
+      if (!wallet) {
+        throw new Error('Wallet not found for transaction');
+      }
 
       // Calculate total pending withdrawals
       const pendingWithdrawals = await tx.withdrawalRequest.aggregate({
@@ -281,7 +282,7 @@ export class StepperService {
       });
 
       const totalPending = pendingWithdrawals._sum.amount || 0;
-      const availableBalance = wallet.balance - totalPending;
+      const availableBalance = wallet!.balance - totalPending;
 
       if (availableBalance < dto.amount) {
         throw new BadRequestException(
@@ -308,7 +309,7 @@ export class StepperService {
     try {
       await this.plunkService.send2FACode(
         stepper.user.email,
-        request.twoFactorCode,
+        request.twoFactorCode!,
         dto.amount,
       );
     } catch (error) {
@@ -325,7 +326,7 @@ export class StepperService {
 
   async getWithdrawalRequests(userId: string, page = 1, limit = 20) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
     });
 
     if (!stepper) {
@@ -349,7 +350,7 @@ export class StepperService {
 
   async getCommissionHistory(userId: string, page = 1, limit = 20) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
     });
 
     if (!stepper) {
@@ -388,7 +389,6 @@ export class StepperService {
       where: {
         available: true,
         verified: true,
-        deletedAt: null,
       },
       include: {
         user: {

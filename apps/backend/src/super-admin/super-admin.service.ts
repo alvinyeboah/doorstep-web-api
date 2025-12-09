@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SuperAdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // Platform Analytics
   async getPlatformAnalytics() {
@@ -19,8 +19,8 @@ export class SuperAdminService {
       completedOrders,
     ] = await Promise.all([
       this.prisma.vendor.count({ where: { deletedAt: null } }),
-      this.prisma.stepper.count({ where: { deletedAt: null } }),
-      this.prisma.customer.count({ where: { deletedAt: null } }),
+      this.prisma.stepper.count(),
+      this.prisma.customer.count(),
       this.prisma.order.count(),
       this.prisma.order.aggregate({
         where: { status: 'COMPLETED' },
@@ -283,7 +283,7 @@ export class SuperAdminService {
   }
 
   async getAllWithdrawals(status?: string) {
-    const where = status ? { status } : {};
+    const where = status ? { status: status as any } : {};
 
     return this.prisma.withdrawalRequest.findMany({
       where,
@@ -329,6 +329,10 @@ export class SuperAdminService {
       const wallet = await tx.wallet.findUnique({
         where: { stepperId: withdrawal.stepperId },
       });
+
+      if (!wallet) {
+        throw new NotFoundException('Wallet not found');
+      }
 
       if (wallet.balance < withdrawal.amount) {
         throw new BadRequestException(

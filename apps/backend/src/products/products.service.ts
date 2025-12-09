@@ -10,7 +10,7 @@ import { createPaginatedResponse } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(userId: string, dto: CreateProductDto) {
     const vendor = await this.prisma.vendor.findUnique({
@@ -247,6 +247,12 @@ export class ProductsService {
             { tags: { has: search } },
           ],
         },
+        {
+          vendor: {
+            deletedAt: null,
+            verified: true,
+          },
+        },
       ],
     };
 
@@ -255,7 +261,6 @@ export class ProductsService {
         where,
         include: {
           vendor: {
-            where: { deletedAt: null, verified: true },
             select: {
               id: true,
               shopName: true,

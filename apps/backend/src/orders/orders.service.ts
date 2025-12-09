@@ -30,11 +30,11 @@ export class OrdersService {
     private pushNotificationService: PushNotificationService,
     @Inject(forwardRef(() => StepperService))
     private stepperService: StepperService,
-  ) {}
+  ) { }
 
   async createOrder(userId: string, dto: CreateOrderDto) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
     });
 
     if (!customer) {
@@ -122,6 +122,8 @@ export class OrdersService {
         const product = await tx.product.findUnique({
           where: { id: item.productId },
         });
+
+        if (!product) continue;
 
         // Only decrement stock if it's being tracked (not null)
         if (product.stockQuantity !== null) {
@@ -313,19 +315,19 @@ export class OrdersService {
       hasAccess = true;
     } else if (userRole === 'CUSTOMER') {
       const customer = await this.prisma.customer.findUnique({
-        where: { userId, deletedAt: null },
+        where: { userId },
       });
-      hasAccess = customer && order.customerId === customer.id;
+      hasAccess = !!(customer && order.customerId === customer.id);
     } else if (userRole === 'VENDOR') {
       const vendor = await this.prisma.vendor.findUnique({
-        where: { userId, deletedAt: null },
+        where: { userId },
       });
-      hasAccess = vendor && order.vendorId === vendor.id;
+      hasAccess = !!(vendor && order.vendorId === vendor.id);
     } else if (userRole === 'STEPPER') {
       const stepper = await this.prisma.stepper.findUnique({
-        where: { userId, deletedAt: null },
+        where: { userId },
       });
-      hasAccess = stepper && order.stepperId === stepper.id;
+      hasAccess = !!(stepper && order.stepperId === stepper.id);
     }
 
     if (!hasAccess) {
@@ -358,7 +360,7 @@ export class OrdersService {
     // Authorization: Verify user has permission to update this order
     if (userRole === 'VENDOR') {
       const vendor = await this.prisma.vendor.findUnique({
-        where: { userId, deletedAt: null },
+        where: { userId },
       });
 
       if (!vendor) {
@@ -385,7 +387,7 @@ export class OrdersService {
       }
     } else if (userRole === 'STEPPER') {
       const stepper = await this.prisma.stepper.findUnique({
-        where: { userId, deletedAt: null },
+        where: { userId },
       });
 
       if (!stepper) {
@@ -478,7 +480,7 @@ export class OrdersService {
           // Create commission record
           await tx.commissionHistory.create({
             data: {
-              stepperId: updated.stepperId,
+              stepperId: updated.stepperId!,
               orderId: updated.id,
               amount: commission,
             },
@@ -486,7 +488,7 @@ export class OrdersService {
 
           // Update stepper wallet atomically
           await tx.wallet.update({
-            where: { stepperId: updated.stepperId },
+            where: { stepperId: updated.stepperId! },
             data: {
               balance: { increment: commission },
               totalEarned: { increment: commission },
@@ -559,7 +561,7 @@ export class OrdersService {
       where: { id: stepperId },
     });
 
-    if (!stepper || stepper.deletedAt !== null) {
+    if (!stepper) {
       throw new NotFoundException('Stepper not found');
     }
 
@@ -717,7 +719,7 @@ export class OrdersService {
 
   async rateOrder(userId: string, orderId: string, dto: RateOrderDto) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
     });
 
     if (!customer) {
@@ -776,7 +778,7 @@ export class OrdersService {
 
   async cancelOrder(userId: string, orderId: string) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId, deletedAt: null },
+      where: { userId },
     });
 
     if (!customer) {
