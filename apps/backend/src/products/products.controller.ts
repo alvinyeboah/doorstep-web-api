@@ -57,7 +57,7 @@ export class ProductsController {
   @Get('search')
   @ApiOperation({
     summary: 'Search products',
-    description: 'Search for products by name, description, or category',
+    description: 'Search for products by name, description, or category with pagination',
   })
   @ApiQuery({
     name: 'q',
@@ -65,12 +65,32 @@ export class ProductsController {
     example: 'jollof rice',
     required: false,
   })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
   @ApiResponse({
     status: 200,
     description: 'Search results retrieved successfully',
   })
-  async searchProducts(@Query('q') search: string) {
-    return this.productsService.searchProducts(search);
+  async searchProducts(
+    @Query('q') search: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.productsService.searchProducts(
+      search,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
   }
 
   @Get('all')

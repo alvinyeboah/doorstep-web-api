@@ -29,7 +29,7 @@ export class StepperService {
 
   async register(userId: string, dto: RegisterStepperDto) {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId, deletedAt: null },
     });
 
     if (!user) {
@@ -41,7 +41,7 @@ export class StepperService {
     }
 
     const existingStepper = await this.prisma.stepper.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (existingStepper) {
@@ -90,7 +90,7 @@ export class StepperService {
 
   async updateProfile(userId: string, dto: UpdateStepperDto) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!stepper) {
@@ -110,7 +110,7 @@ export class StepperService {
 
   async getProfile(userId: string) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
       include: {
         user: {
           select: {
@@ -139,7 +139,7 @@ export class StepperService {
 
   async updateAvailability(userId: string, available: boolean) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!stepper) {
@@ -159,7 +159,7 @@ export class StepperService {
 
   async getOrders(userId: string, status?: string, page = 1, limit = 20) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!stepper) {
@@ -186,6 +186,9 @@ export class StepperService {
             },
           },
           vendor: {
+            where: {
+              deletedAt: null,
+            },
             select: {
               id: true,
               shopName: true,
@@ -214,7 +217,7 @@ export class StepperService {
   // Wallet Operations
   async getWallet(userId: string) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
       include: { wallet: true },
     });
 
@@ -227,7 +230,7 @@ export class StepperService {
 
   async makeDeposit(userId: string, dto: DepositDto) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
       include: { wallet: true },
     });
 
@@ -252,7 +255,7 @@ export class StepperService {
 
   async requestWithdrawal(userId: string, dto: WithdrawalRequestDto) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
       include: { wallet: true, user: true },
     });
 
@@ -319,47 +322,61 @@ export class StepperService {
     };
   }
 
-  async getWithdrawalRequests(userId: string) {
+  async getWithdrawalRequests(userId: string, page = 1, limit = 20) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!stepper) {
       throw new NotFoundException('Stepper profile not found');
     }
 
-    const requests = await this.prisma.withdrawalRequest.findMany({
-      where: { stepperId: stepper.id },
-      orderBy: { createdAt: 'desc' },
-    });
+    const where = { stepperId: stepper.id };
 
-    return requests;
+    const [requests, total] = await Promise.all([
+      this.prisma.withdrawalRequest.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.withdrawalRequest.count({ where }),
+    ]);
+
+    return createPaginatedResponse(requests, total, page, limit);
   }
 
-  async getCommissionHistory(userId: string) {
+  async getCommissionHistory(userId: string, page = 1, limit = 20) {
     const stepper = await this.prisma.stepper.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!stepper) {
       throw new NotFoundException('Stepper profile not found');
     }
 
-    const history = await this.prisma.commissionHistory.findMany({
-      where: { stepperId: stepper.id },
-      include: {
-        order: {
-          select: {
-            id: true,
-            total: true,
-            createdAt: true,
+    const where = { stepperId: stepper.id };
+
+    const [history, total] = await Promise.all([
+      this.prisma.commissionHistory.findMany({
+        where,
+        include: {
+          order: {
+            select: {
+              id: true,
+              total: true,
+              createdAt: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.commissionHistory.count({ where }),
+    ]);
 
-    return history;
+    return createPaginatedResponse(history, total, page, limit);
   }
 
   async getNearbySteppers(latitude: number, longitude: number, radiusKm = 10) {
@@ -370,6 +387,7 @@ export class StepperService {
       where: {
         available: true,
         verified: true,
+        deletedAt: null,
       },
       include: {
         user: {

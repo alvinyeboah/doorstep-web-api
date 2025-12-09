@@ -5,6 +5,9 @@ import {
   IsNotEmpty,
   IsNumber,
   IsEnum,
+  Min,
+  Max,
+  IsInt,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -13,6 +16,8 @@ class OrderItemDto {
     description: 'Product ID',
     example: 'clp123abc456def',
   })
+  @IsString()
+  @IsNotEmpty()
   productId: string;
 
   @ApiProperty({
@@ -20,6 +25,8 @@ class OrderItemDto {
     example: 2,
     minimum: 1,
   })
+  @IsInt()
+  @Min(1)
   quantity: number;
 }
 
@@ -119,6 +126,8 @@ export class RateOrderDto {
     maximum: 5,
   })
   @IsNumber()
+  @Min(1)
+  @Max(5)
   @IsOptional()
   vendorRating?: number;
 
@@ -129,6 +138,8 @@ export class RateOrderDto {
     maximum: 5,
   })
   @IsNumber()
+  @Min(1)
+  @Max(5)
   @IsOptional()
   stepperRating?: number;
 

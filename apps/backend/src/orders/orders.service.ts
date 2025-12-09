@@ -405,6 +405,32 @@ export class OrdersService {
       );
     }
 
+    // State machine validation: Prevent invalid status transitions
+    const validTransitions: Record<string, string[]> = {
+      PLACED: ['ACCEPTED', 'CANCELLED'],
+      ACCEPTED: ['PREPARING', 'CANCELLED'],
+      PREPARING: ['READY', 'CANCELLED'],
+      READY: ['OUT_FOR_DELIVERY', 'CANCELLED'],
+      OUT_FOR_DELIVERY: ['DELIVERED', 'CANCELLED'],
+      DELIVERED: ['COMPLETED'],
+      CANCELLED: [], // Terminal state
+      COMPLETED: [], // Terminal state
+    };
+
+    const currentStatus = order.status;
+    const newStatus = dto.status;
+
+    if (!validTransitions[currentStatus]) {
+      throw new BadRequestException(`Invalid current order status: ${currentStatus}`);
+    }
+
+    if (!validTransitions[currentStatus].includes(newStatus)) {
+      throw new BadRequestException(
+        `Invalid status transition from ${currentStatus} to ${newStatus}. ` +
+        `Valid transitions: ${validTransitions[currentStatus].join(', ') || 'none (terminal state)'}`,
+      );
+    }
+
     const updated = await this.prisma.order.update({
       where: { id: orderId },
       data: { status: dto.status as any },

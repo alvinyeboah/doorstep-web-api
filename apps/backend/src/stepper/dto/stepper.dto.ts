@@ -143,10 +143,10 @@ export class DepositDto {
   @ApiProperty({
     description: 'Deposit amount',
     example: 100.0,
-    minimum: 0,
+    minimum: 0.01,
   })
   @IsNumber()
-  @Min(0)
+  @Min(0.01)
   @IsNotEmpty()
   amount: number;
 }
@@ -155,10 +155,10 @@ export class WithdrawalRequestDto {
   @ApiProperty({
     description: 'Withdrawal amount',
     example: 50.0,
-    minimum: 0,
+    minimum: 0.01,
   })
   @IsNumber()
-  @Min(0)
+  @Min(0.01)
   @IsNotEmpty()
   amount: number;
 }

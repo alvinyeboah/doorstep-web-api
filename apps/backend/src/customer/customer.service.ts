@@ -20,7 +20,7 @@ export class CustomerService {
 
   async register(userId: string, dto: RegisterCustomerDto) {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId, deletedAt: null },
     });
 
     if (!user) {
@@ -32,7 +32,7 @@ export class CustomerService {
     }
 
     const existingCustomer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (existingCustomer) {
@@ -70,7 +70,7 @@ export class CustomerService {
 
   async updateProfile(userId: string, dto: UpdateCustomerDto) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!customer) {
@@ -90,7 +90,7 @@ export class CustomerService {
 
   async getProfile(userId: string) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
       include: {
         user: {
           select: {
@@ -118,7 +118,7 @@ export class CustomerService {
   // Cart Operations
   async getCart(userId: string) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!customer) {
@@ -169,7 +169,7 @@ export class CustomerService {
 
   async addToCart(userId: string, dto: AddToCartDto) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
       include: { cart: true },
     });
 
@@ -226,7 +226,7 @@ export class CustomerService {
 
   async updateCartItem(userId: string, itemId: string, dto: UpdateCartItemDto) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
       include: { cart: true },
     });
 
@@ -260,7 +260,7 @@ export class CustomerService {
 
   async clearCart(userId: string) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
       include: { cart: true },
     });
 
@@ -278,7 +278,7 @@ export class CustomerService {
   // Order Operations
   async getOrders(userId: string, status?: string, page = 1, limit = 20) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!customer) {
@@ -295,6 +295,9 @@ export class CustomerService {
         where,
         include: {
           vendor: {
+            where: {
+              deletedAt: null,
+            },
             select: {
               id: true,
               shopName: true,
@@ -331,7 +334,7 @@ export class CustomerService {
 
   async getOrder(userId: string, orderId: string) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!customer) {
@@ -345,6 +348,9 @@ export class CustomerService {
       },
       include: {
         vendor: {
+          where: {
+            deletedAt: null,
+          },
           select: {
             id: true,
             shopName: true,

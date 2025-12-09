@@ -161,7 +161,7 @@ export class ProductsService {
     return { message: 'Product deleted successfully' };
   }
 
-  async getMyProducts(userId: string) {
+  async getMyProducts(userId: string, page = 1, limit = 20) {
     const vendor = await this.prisma.vendor.findUnique({
       where: { userId, deletedAt: null },
     });
@@ -170,12 +170,19 @@ export class ProductsService {
       throw new NotFoundException('Vendor profile not found');
     }
 
-    const products = await this.prisma.product.findMany({
-      where: { vendorId: vendor.id, deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
+    const where = { vendorId: vendor.id, deletedAt: null };
 
-    return products;
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return createPaginatedResponse(products, total, page, limit);
   }
 
   async getProductsByVendor(vendorId: string) {
@@ -227,37 +234,44 @@ export class ProductsService {
     return product;
   }
 
-  async searchProducts(search: string) {
-    const products = await this.prisma.product.findMany({
-      where: {
-        AND: [
-          { available: true, deletedAt: null },
-          {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' as any } },
-              { description: { contains: search, mode: 'insensitive' as any } },
-              { category: { contains: search, mode: 'insensitive' as any } },
-              { tags: { has: search } },
-            ],
-          },
-        ],
-      },
-      include: {
-        vendor: {
-          where: { deletedAt: null, verified: true },
-          select: {
-            id: true,
-            shopName: true,
+  async searchProducts(search: string, page = 1, limit = 20) {
+    const where = {
+      AND: [
+        { available: true, deletedAt: null },
+        {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' as any } },
+            { description: { contains: search, mode: 'insensitive' as any } },
+            { category: { contains: search, mode: 'insensitive' as any } },
+            { tags: { has: search } },
+          ],
+        },
+      ],
+    };
+
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        include: {
+          vendor: {
+            where: { deletedAt: null, verified: true },
+            select: {
+              id: true,
+              shopName: true,
+            },
           },
         },
-      },
-      orderBy: { name: 'asc' },
-    });
+        orderBy: { name: 'asc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
 
     // Filter out products with deleted vendors
     const validProducts = products.filter(p => p.vendor);
 
-    return validProducts;
+    return createPaginatedResponse(validProducts, total, page, limit);
   }
 
   async getAllProducts(page = 1, limit = 20) {

@@ -298,7 +298,19 @@ export class VendorController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get my products',
-    description: 'Vendor retrieves all their own products',
+    description: 'Vendor retrieves all their own products with pagination',
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
   })
   @ApiResponse({
     status: 200,
@@ -312,8 +324,16 @@ export class VendorController {
     status: 403,
     description: 'Forbidden - vendor role required',
   })
-  async getMyProducts(@CurrentUser() user: any) {
-    return this.productsService.getMyProducts(user.id);
+  async getMyProducts(
+    @CurrentUser() user: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.productsService.getMyProducts(
+      user.id,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
   }
 
   @UseGuards(AuthGuard, RolesGuard)
