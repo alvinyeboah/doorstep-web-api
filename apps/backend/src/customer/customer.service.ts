@@ -234,6 +234,15 @@ export class CustomerService {
       throw new NotFoundException('Cart not found');
     }
 
+    // Verify cart item belongs to this user's cart
+    const cartItem = await this.prisma.cartItem.findUnique({
+      where: { id: itemId },
+    });
+
+    if (!cartItem || cartItem.cartId !== customer.cart.id) {
+      throw new ForbiddenException('You can only update items in your own cart');
+    }
+
     if (dto.quantity === 0) {
       await this.prisma.cartItem.delete({
         where: { id: itemId },

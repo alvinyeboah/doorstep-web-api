@@ -260,28 +260,51 @@ export class StepperService {
       throw new NotFoundException('Wallet not found');
     }
 
-    if (stepper.wallet.balance < dto.amount) {
-      throw new BadRequestException('Insufficient balance');
-    }
+    // Use transaction to atomically check balance and create request
+    const request = await this.prisma.$transaction(async (tx) => {
+      // Get current wallet state
+      const wallet = await tx.wallet.findUnique({
+        where: { id: stepper.wallet.id },
+      });
 
-    const twoFactorCode = Math.floor(
-      100000 + Math.random() * 900000,
-    ).toString();
+      // Calculate total pending withdrawals
+      const pendingWithdrawals = await tx.withdrawalRequest.aggregate({
+        where: {
+          stepperId: stepper.id,
+          status: 'PENDING',
+        },
+        _sum: { amount: true },
+      });
 
-    const request = await this.prisma.withdrawalRequest.create({
-      data: {
-        stepperId: stepper.id,
-        amount: dto.amount,
-        twoFactorCode,
-        status: 'PENDING',
-      },
+      const totalPending = pendingWithdrawals._sum.amount || 0;
+      const availableBalance = wallet.balance - totalPending;
+
+      if (availableBalance < dto.amount) {
+        throw new BadRequestException(
+          `Insufficient available balance. Available: GHC ${availableBalance}, Pending withdrawals: GHC ${totalPending}`,
+        );
+      }
+
+      const twoFactorCode = Math.floor(
+        100000 + Math.random() * 900000,
+      ).toString();
+
+      // Create withdrawal request atomically
+      return await tx.withdrawalRequest.create({
+        data: {
+          stepperId: stepper.id,
+          amount: dto.amount,
+          twoFactorCode,
+          status: 'PENDING',
+        },
+      });
     });
 
-    // Send 2FA code via email
+    // Send 2FA code via email (outside transaction)
     try {
       await this.plunkService.send2FACode(
         stepper.user.email,
-        twoFactorCode,
+        request.twoFactorCode,
         dto.amount,
       );
     } catch (error) {

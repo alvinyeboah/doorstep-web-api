@@ -437,22 +437,25 @@ export class OrdersService {
       );
 
       if (!existingCommission) {
-        // Create commission record
-        await this.prisma.commissionHistory.create({
-          data: {
-            stepperId: updated.stepperId,
-            orderId: updated.id,
-            amount: commission,
-          },
-        });
+        // Use transaction for atomic commission crediting
+        await this.prisma.$transaction(async (tx) => {
+          // Create commission record
+          await tx.commissionHistory.create({
+            data: {
+              stepperId: updated.stepperId,
+              orderId: updated.id,
+              amount: commission,
+            },
+          });
 
-        // Update stepper wallet
-        await this.prisma.wallet.update({
-          where: { stepperId: updated.stepperId },
-          data: {
-            balance: { increment: commission },
-            totalEarned: { increment: commission },
-          },
+          // Update stepper wallet atomically
+          await tx.wallet.update({
+            where: { stepperId: updated.stepperId },
+            data: {
+              balance: { increment: commission },
+              totalEarned: { increment: commission },
+            },
+          });
         });
       }
     }
@@ -745,6 +748,9 @@ export class OrdersService {
         id: orderId,
         customerId: customer.id,
       },
+      include: {
+        items: true,
+      },
     });
 
     if (!order) {
@@ -755,14 +761,38 @@ export class OrdersService {
       throw new BadRequestException('Order cannot be cancelled at this stage');
     }
 
-    const updated = await this.prisma.order.update({
-      where: { id: orderId },
-      data: { status: 'CANCELLED' },
+    // Use transaction to atomically cancel order and restore stock
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // Cancel the order
+      const cancelledOrder = await tx.order.update({
+        where: { id: orderId },
+        data: { status: 'CANCELLED' },
+      });
+
+      // Restore stock for each product in the order
+      for (const item of order.items) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+        });
+
+        // Only restore stock if product still exists and tracks stock
+        if (product && product.stockQuantity !== null) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: { increment: item.quantity },
+              soldCount: { decrement: item.quantity },
+            },
+          });
+        }
+      }
+
+      return cancelledOrder;
     });
 
     return {
       order: updated,
-      message: 'Order cancelled successfully',
+      message: 'Order cancelled successfully and stock restored',
     };
   }
 

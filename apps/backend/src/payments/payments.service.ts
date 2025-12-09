@@ -247,15 +247,32 @@ export class PaymentsService {
     if (metadata.type === 'stepper_deposit') {
       const stepperId = metadata.stepperId;
 
-      // Update stepper wallet with deposit
-      await this.prisma.wallet.update({
+      // Check if deposit already processed (idempotency)
+      const wallet = await this.prisma.wallet.findUnique({
         where: { stepperId },
-        data: {
-          depositAmount: 1000,
-          balance: { increment: 1000 },
-          investmentStartDate: new Date(),
-          lastGrowthUpdate: new Date(),
-        },
+      });
+
+      if (!wallet) {
+        this.logger.error(`Wallet not found for stepper: ${stepperId}`);
+        throw new BadRequestException('Wallet not found');
+      }
+
+      if (wallet.depositAmount >= 1000) {
+        this.logger.warn(`Stepper ${stepperId} deposit already processed`);
+        return; // Don't double-credit
+      }
+
+      // Use transaction for atomic deposit crediting
+      await this.prisma.$transaction(async (tx) => {
+        await tx.wallet.update({
+          where: { stepperId },
+          data: {
+            depositAmount: 1000,
+            balance: { increment: 1000 },
+            investmentStartDate: new Date(),
+            lastGrowthUpdate: new Date(),
+          },
+        });
       });
 
       this.logger.log(`Stepper deposit credited: ${stepperId} - GHC 1000`);

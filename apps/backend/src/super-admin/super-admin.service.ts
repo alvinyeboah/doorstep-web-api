@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -17,9 +17,9 @@ export class SuperAdminService {
       activeOrders,
       completedOrders,
     ] = await Promise.all([
-      this.prisma.vendor.count(),
-      this.prisma.stepper.count(),
-      this.prisma.customer.count(),
+      this.prisma.vendor.count({ where: { deletedAt: null } }),
+      this.prisma.stepper.count({ where: { deletedAt: null } }),
+      this.prisma.customer.count({ where: { deletedAt: null } }),
       this.prisma.order.count(),
       this.prisma.order.aggregate({
         where: { status: 'COMPLETED' },
@@ -50,7 +50,10 @@ export class SuperAdminService {
 
   // Get all vendors (companies like KFC, McDonald's, etc.)
   async getAllVendors(verified?: boolean) {
-    const where = verified !== undefined ? { verified } : {};
+    const where: any = { deletedAt: null };
+    if (verified !== undefined) {
+      where.verified = verified;
+    }
 
     return this.prisma.vendor.findMany({
       where,
@@ -66,7 +69,7 @@ export class SuperAdminService {
         },
         _count: {
           select: {
-            products: true,
+            products: { where: { deletedAt: null } },
             orders: true,
           },
         },
@@ -80,10 +83,12 @@ export class SuperAdminService {
   // Get specific vendor (company) details
   async getVendorDetails(vendorId: string) {
     const vendor = await this.prisma.vendor.findUnique({
-      where: { id: vendorId },
+      where: { id: vendorId, deletedAt: null },
       include: {
         user: true,
-        products: true,
+        products: {
+          where: { deletedAt: null },
+        },
         orders: {
           include: {
             items: true,
@@ -105,7 +110,7 @@ export class SuperAdminService {
         },
         _count: {
           select: {
-            products: true,
+            products: { where: { deletedAt: null } },
             orders: true,
           },
         },
@@ -229,7 +234,10 @@ export class SuperAdminService {
 
   // Get all users
   async getAllUsers(role?: string) {
-    const where = role ? { role } : {};
+    const where: any = { deletedAt: null };
+    if (role) {
+      where.role = role;
+    }
 
     return this.prisma.user.findMany({
       where,
@@ -246,5 +254,138 @@ export class SuperAdminService {
         createdAt: 'desc',
       },
     });
+  }
+
+  // Withdrawal Management
+  async getPendingWithdrawals() {
+    return this.prisma.withdrawalRequest.findMany({
+      where: { status: 'PENDING' },
+      include: {
+        stepper: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+            wallet: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+  }
+
+  async getAllWithdrawals(status?: string) {
+    const where = status ? { status } : {};
+
+    return this.prisma.withdrawalRequest.findMany({
+      where,
+      include: {
+        stepper: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async approveWithdrawal(withdrawalId: string) {
+    const withdrawal = await this.prisma.withdrawalRequest.findUnique({
+      where: { id: withdrawalId },
+      include: { stepper: { include: { wallet: true } } },
+    });
+
+    if (!withdrawal) {
+      throw new NotFoundException('Withdrawal request not found');
+    }
+
+    if (withdrawal.status !== 'PENDING') {
+      throw new BadRequestException(
+        `Cannot approve withdrawal with status: ${withdrawal.status}`,
+      );
+    }
+
+    // Use transaction to atomically approve and deduct balance
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // Verify wallet still has sufficient balance
+      const wallet = await tx.wallet.findUnique({
+        where: { stepperId: withdrawal.stepperId },
+      });
+
+      if (wallet.balance < withdrawal.amount) {
+        throw new BadRequestException(
+          `Insufficient balance. Required: GHC ${withdrawal.amount}, Available: GHC ${wallet.balance}`,
+        );
+      }
+
+      // Deduct from wallet
+      await tx.wallet.update({
+        where: { stepperId: withdrawal.stepperId },
+        data: {
+          balance: { decrement: withdrawal.amount },
+        },
+      });
+
+      // Mark withdrawal as approved
+      return await tx.withdrawalRequest.update({
+        where: { id: withdrawalId },
+        data: {
+          status: 'APPROVED',
+          processedAt: new Date(),
+        },
+      });
+    });
+
+    return {
+      withdrawal: updated,
+      message: `Withdrawal approved. GHC ${withdrawal.amount} has been deducted from stepper wallet.`,
+    };
+  }
+
+  async rejectWithdrawal(withdrawalId: string, reason?: string) {
+    const withdrawal = await this.prisma.withdrawalRequest.findUnique({
+      where: { id: withdrawalId },
+    });
+
+    if (!withdrawal) {
+      throw new NotFoundException('Withdrawal request not found');
+    }
+
+    if (withdrawal.status !== 'PENDING') {
+      throw new BadRequestException(
+        `Cannot reject withdrawal with status: ${withdrawal.status}`,
+      );
+    }
+
+    const updated = await this.prisma.withdrawalRequest.update({
+      where: { id: withdrawalId },
+      data: {
+        status: 'REJECTED',
+        processedAt: new Date(),
+        // Store reason in a comment field if available, or just log it
+      },
+    });
+
+    return {
+      withdrawal: updated,
+      message: `Withdrawal rejected.${reason ? ` Reason: ${reason}` : ''}`,
+    };
   }
 }

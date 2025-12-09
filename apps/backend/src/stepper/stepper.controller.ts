@@ -326,11 +326,12 @@ export class StepperController {
     return this.stepperService.getCommissionHistory(user.id);
   }
 
+  @UseGuards(AuthGuard)
   @Get('nearby')
   @ApiOperation({
     summary: 'Get nearby available steppers',
     description:
-      'Find available and verified steppers near a location for delivery. Public endpoint - no authentication required.',
+      'Find available and verified steppers near a location for delivery. Requires authentication to protect stepper privacy.',
   })
   @ApiQuery({
     name: 'latitude',
@@ -353,6 +354,10 @@ export class StepperController {
   @ApiResponse({
     status: 200,
     description: 'Nearby steppers retrieved successfully, sorted by distance',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
   })
   @ApiResponse({
     status: 400,
