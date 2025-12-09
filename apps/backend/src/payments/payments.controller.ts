@@ -34,9 +34,9 @@ export class PaymentsController {
   @Post('initialize')
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Initialize a payment',
+    summary: 'Initialize payment for order',
     description:
-      'Initialize a Paystack payment transaction and get authorization URL',
+      'Initialize a Paystack payment transaction for an order. Use metadata.orderId to specify the order being paid for. Get authorization URL to redirect customer to Paystack checkout.',
   })
   @ApiResponse({
     status: 200,

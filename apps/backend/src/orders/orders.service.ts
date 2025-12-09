@@ -205,7 +205,7 @@ export class OrdersService {
     };
   }
 
-  async getOrder(orderId: string) {
+  async getOrder(orderId: string, userId: string, userRole: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: {
@@ -224,6 +224,7 @@ export class OrdersService {
             id: true,
             shopName: true,
             address: true,
+            userId: true,
           },
         },
         stepper: {
@@ -249,16 +250,113 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
 
+    // Authorization: Verify user has permission to view this order
+    let hasAccess = false;
+
+    if (userRole === 'SUPER_ADMIN') {
+      hasAccess = true;
+    } else if (userRole === 'CUSTOMER') {
+      const customer = await this.prisma.customer.findUnique({
+        where: { userId },
+      });
+      hasAccess = customer && order.customerId === customer.id;
+    } else if (userRole === 'VENDOR') {
+      const vendor = await this.prisma.vendor.findUnique({
+        where: { userId },
+      });
+      hasAccess = vendor && order.vendorId === vendor.id;
+    } else if (userRole === 'STEPPER') {
+      const stepper = await this.prisma.stepper.findUnique({
+        where: { userId },
+      });
+      hasAccess = stepper && order.stepperId === stepper.id;
+    }
+
+    if (!hasAccess) {
+      throw new ForbiddenException(
+        'You do not have permission to view this order',
+      );
+    }
+
     return order;
   }
 
-  async updateOrderStatus(orderId: string, dto: UpdateOrderStatusDto) {
+  async updateOrderStatus(
+    orderId: string,
+    userId: string,
+    userRole: string,
+    dto: UpdateOrderStatusDto,
+  ) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
+      include: {
+        vendor: true,
+        stepper: true,
+      },
     });
 
     if (!order) {
       throw new NotFoundException('Order not found');
+    }
+
+    // Authorization: Verify user has permission to update this order
+    if (userRole === 'VENDOR') {
+      const vendor = await this.prisma.vendor.findUnique({
+        where: { userId },
+      });
+
+      if (!vendor) {
+        throw new ForbiddenException('Vendor profile not found');
+      }
+
+      if (order.vendorId !== vendor.id) {
+        throw new ForbiddenException(
+          'You can only update orders for your own restaurant',
+        );
+      }
+
+      // Vendors can only update to certain statuses
+      const allowedVendorStatuses = [
+        'ACCEPTED',
+        'PREPARING',
+        'READY',
+        'CANCELLED',
+      ];
+      if (!allowedVendorStatuses.includes(dto.status)) {
+        throw new BadRequestException(
+          `Vendors can only update order status to: ${allowedVendorStatuses.join(', ')}`,
+        );
+      }
+    } else if (userRole === 'STEPPER') {
+      const stepper = await this.prisma.stepper.findUnique({
+        where: { userId },
+      });
+
+      if (!stepper) {
+        throw new ForbiddenException('Stepper profile not found');
+      }
+
+      if (order.stepperId !== stepper.id) {
+        throw new ForbiddenException(
+          'You can only update orders assigned to you',
+        );
+      }
+
+      // Steppers can only update to certain statuses
+      const allowedStepperStatuses = [
+        'OUT_FOR_DELIVERY',
+        'DELIVERED',
+        'COMPLETED',
+      ];
+      if (!allowedStepperStatuses.includes(dto.status)) {
+        throw new BadRequestException(
+          `Steppers can only update order status to: ${allowedStepperStatuses.join(', ')}`,
+        );
+      }
+    } else {
+      throw new ForbiddenException(
+        'Only vendors and steppers can update order status',
+      );
     }
 
     const updated = await this.prisma.order.update({

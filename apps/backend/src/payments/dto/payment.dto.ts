@@ -29,8 +29,12 @@ export class InitializePaymentDto {
   reference?: string;
 
   @ApiPropertyOptional({
-    description: 'Payment metadata (order ID, customer ID, etc.)',
-    example: { orderId: 'order123', customerId: 'customer456' },
+    description: 'Payment metadata - MUST include orderId for order payments. Include type: "order_payment" to specify payment purpose.',
+    example: {
+      orderId: 'clp123abc456def',
+      customerId: 'clp456xyz789abc',
+      type: 'order_payment'
+    },
   })
   @IsOptional()
   metadata?: Record<string, any>;

@@ -2,9 +2,26 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import * as helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Security headers with Helmet.js
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"], // For Swagger UI
+          scriptSrc: ["'self'", "'unsafe-inline'"], // For Swagger UI
+          imgSrc: ["'self'", 'data:', 'https:'], // Allow images from CDN
+        },
+      },
+      crossOriginEmbedderPolicy: false, // Disable for Swagger UI
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
 
   // Enable CORS - configure allowed origins
   const allowedOrigins = [

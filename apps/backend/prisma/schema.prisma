@@ -55,6 +55,7 @@ model User {
   role       String    @default("CUSTOMER") // VENDOR, STEPPER, CUSTOMER, SUPER_ADMIN
   verified   Boolean   @default(false)
   pushToken  String?   @map("push_token") // Device push notification token (Expo/Native)
+  deletedAt  DateTime? @map("deleted_at") // Soft delete
 
   // Relations
   sessions      Session[]
@@ -64,6 +65,8 @@ model User {
   stepper       Stepper?
   notifications Notification[]
 
+  @@index([role])
+  @@index([deletedAt])
   @@map("user")
 }
 
@@ -117,41 +120,91 @@ model Verification {
 }
 
 model Vendor {
-  id              String   @id @default(uuid())
-  userId          String   @unique @map("user_id")
-  shopName        String   @map("shop_name")
-  logoUrl         String?  @map("logo_url")
-  businessType    String?  @map("business_type")
+  id              String    @id @default(uuid())
+  userId          String    @unique @map("user_id")
+  shopName        String    @map("shop_name")
+  logoUrl         String?   @map("logo_url")
+  businessType    String?   @map("business_type")
   description     String?
-  location        Json?    // GeoJSON Point { type: "Point", coordinates: [lng, lat] }
-  address         String?
-  hours           Json?    // { open: "08:00", close: "22:00" }
-  businessLicense String?  @map("business_license")
-  verified        Boolean  @default(false)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  location        Json?     // GeoJSON Point (main/default location) { type: "Point", coordinates: [lng, lat] }
+  address         String?   // Main/default address
+  hours           Json?     // Default hours { open: "08:00", close: "22:00" }
+  businessLicense String?   @map("business_license")
+  verified        Boolean   @default(false)
+  deletedAt       DateTime? @map("deleted_at") // Soft delete
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branches VendorBranch[] // Multiple locations/branches
   products Product[]
   orders   Order[]
   ratings  Rating[]
 
+  @@index([verified])
+  @@index([deletedAt])
   @@map("vendors")
+}
+
+model VendorBranch {
+  id           String    @id @default(uuid())
+  vendorId     String    @map("vendor_id")
+  branchName   String    @map("branch_name") // e.g., "Downtown Branch", "Campus Branch"
+  address      String
+  location     Json      // GeoJSON Point { type: "Point", coordinates: [lng, lat] }
+  phone        String?
+  hours        Json?     // Operating hours { monday: { open: "08:00", close: "22:00" }, ... }
+  isMain       Boolean   @default(false) @map("is_main") // Mark primary/main branch
+  isActive     Boolean   @default(true) @map("is_active") // Branch operational status
+  managerName  String?   @map("manager_name")
+  managerPhone String?   @map("manager_phone")
+  deletedAt    DateTime? @map("deleted_at") // Soft delete
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("vendor_branches")
 }
 
 model Customer {
   id        String   @id @default(uuid())
   userId    String   @unique @map("user_id")
   hall      String?
-  address   String?
+  address   String?  // Deprecated - use Address model instead
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cart   Cart?
-  orders Order[]
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cart      Cart?
+  orders    Order[]
+  addresses Address[] // Multiple delivery addresses
 
   @@map("customers")
+}
+
+model Address {
+  id           String    @id @default(uuid())
+  customerId   String    @map("customer_id")
+  label        String    // e.g., "Home", "Work", "Hostel"
+  street       String
+  hall         String?   // For campus deliveries
+  building     String?
+  room         String?
+  landmark     String?
+  instructions String?   // Delivery instructions
+  location     Json?     // GeoJSON Point { type: "Point", coordinates: [lng, lat] }
+  isDefault    Boolean   @default(false) @map("is_default")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@map("addresses")
 }
 
 model Stepper {
@@ -180,21 +233,36 @@ model Stepper {
 }
 
 model Product {
-  id          String   @id @default(uuid())
-  vendorId    String   @map("vendor_id")
-  name        String
-  price       Float
-  description String?
-  photoUrl    String?  @map("photo_url")
-  category    String?
-  available   Boolean  @default(true)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(uuid())
+  vendorId        String   @map("vendor_id")
+  name            String
+  price           Float
+  originalPrice   Float?   @map("original_price") // For showing discounts (was $30, now $25)
+  discountPrice   Float?   @map("discount_price") // Current discounted price if on sale
+  description     String?
+  photoUrl        String?  @map("photo_url") // Primary image (kept for backwards compatibility)
+  images          String[] @default([]) // Multiple product images
+  category        String?
+  tags            String[] @default([]) // e.g., ["vegetarian", "spicy", "halal", "gluten-free"]
+  allergens       String[] @default([]) // e.g., ["nuts", "dairy", "shellfish", "gluten"]
+  calories        Int?     // Nutritional information
+  preparationTime Int?     @map("preparation_time") // Estimated cooking time in minutes
+  stockQuantity   Int?     @map("stock_quantity") // Inventory tracking
+  isPopular       Boolean  @default(false) @map("is_popular") // Featured/trending items
+  soldCount       Int      @default(0) @map("sold_count") // Track total sales for analytics
+  available       Boolean  @default(true)
+  deletedAt       DateTime? @map("deleted_at") // Soft delete
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   vendor     Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
   cartItems  CartItem[]
 
+  @@index([vendorId])
+  @@index([category])
+  @@index([available])
+  @@index([deletedAt])
   @@map("products")
 }
 
@@ -247,6 +315,11 @@ model Order {
   rating            Rating?
   commissionHistory CommissionHistory?
 
+  @@index([customerId])
+  @@index([vendorId])
+  @@index([stepperId])
+  @@index([status])
+  @@index([createdAt])
   @@map("orders")
 }
 

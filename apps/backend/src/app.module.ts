@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -20,6 +22,19 @@ import { PlunkModule } from './plunk/plunk.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    // Rate Limiting: 100 requests per 60 seconds per IP
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000, // 60 seconds
+        limit: 100, // 100 requests
+      },
+      {
+        name: 'strict', // For sensitive endpoints
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     PrismaModule,
     AuthModule,
     VendorModule,
@@ -34,6 +49,12 @@ import { PlunkModule } from './plunk/plunk.module';
     PlunkModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard, // Apply rate limiting globally
+    },
+  ],
 })
 export class AppModule {}
