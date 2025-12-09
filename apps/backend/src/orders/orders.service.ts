@@ -33,11 +33,20 @@ export class OrdersService {
 
   async createOrder(userId: string, dto: CreateOrderDto) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!customer) {
       throw new NotFoundException('Customer profile not found');
+    }
+
+    // Validate vendor exists and is not deleted
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { id: dto.vendorId },
+    });
+
+    if (!vendor || vendor.deletedAt !== null) {
+      throw new NotFoundException('Vendor not found');
     }
 
     // Use transaction for atomic stock management
@@ -303,17 +312,17 @@ export class OrdersService {
       hasAccess = true;
     } else if (userRole === 'CUSTOMER') {
       const customer = await this.prisma.customer.findUnique({
-        where: { userId },
+        where: { userId, deletedAt: null },
       });
       hasAccess = customer && order.customerId === customer.id;
     } else if (userRole === 'VENDOR') {
       const vendor = await this.prisma.vendor.findUnique({
-        where: { userId },
+        where: { userId, deletedAt: null },
       });
       hasAccess = vendor && order.vendorId === vendor.id;
     } else if (userRole === 'STEPPER') {
       const stepper = await this.prisma.stepper.findUnique({
-        where: { userId },
+        where: { userId, deletedAt: null },
       });
       hasAccess = stepper && order.stepperId === stepper.id;
     }
@@ -348,7 +357,7 @@ export class OrdersService {
     // Authorization: Verify user has permission to update this order
     if (userRole === 'VENDOR') {
       const vendor = await this.prisma.vendor.findUnique({
-        where: { userId },
+        where: { userId, deletedAt: null },
       });
 
       if (!vendor) {
@@ -375,7 +384,7 @@ export class OrdersService {
       }
     } else if (userRole === 'STEPPER') {
       const stepper = await this.prisma.stepper.findUnique({
-        where: { userId },
+        where: { userId, deletedAt: null },
       });
 
       if (!stepper) {
@@ -549,7 +558,11 @@ export class OrdersService {
       where: { id: stepperId },
     });
 
-    if (!stepper || !stepper.available) {
+    if (!stepper || stepper.deletedAt !== null) {
+      throw new NotFoundException('Stepper not found');
+    }
+
+    if (!stepper.available) {
       throw new BadRequestException('Stepper not available');
     }
 
@@ -703,7 +716,7 @@ export class OrdersService {
 
   async rateOrder(userId: string, orderId: string, dto: RateOrderDto) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!customer) {
@@ -762,7 +775,7 @@ export class OrdersService {
 
   async cancelOrder(userId: string, orderId: string) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!customer) {
