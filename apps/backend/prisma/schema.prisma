@@ -305,6 +305,9 @@ model Order {
   deliveryLocation  Json?       @map("delivery_location") // GeoJSON Point
   customerNotes     String?     @map("customer_notes")
   estimatedDelivery DateTime?   @map("estimated_delivery")
+  paid              Boolean     @default(false) // Payment status
+  paymentReference  String?     @map("payment_reference") // Paystack reference
+  paidAt            DateTime?   @map("paid_at") // Payment timestamp
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")
 
@@ -320,6 +323,7 @@ model Order {
   @@index([stepperId])
   @@index([status])
   @@index([createdAt])
+  @@index([paid])
   @@map("orders")
 }
 

@@ -103,6 +103,112 @@ export class ProductsController {
     return this.productsService.getAllProducts(pageNum, limitNum);
   }
 
+  @Get('filter/tags')
+  @ApiOperation({
+    summary: 'Filter products by tags',
+    description: 'Get products that have any of the specified tags (e.g., halal, vegan, spicy)',
+  })
+  @ApiQuery({
+    name: 'tags',
+    description: 'Comma-separated list of tags',
+    example: 'halal,spicy',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Filtered products retrieved successfully',
+  })
+  async filterByTags(
+    @Query('tags') tags: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const tagArray = tags.split(',').map(t => t.trim());
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.productsService.filterByTags(tagArray, pageNum, limitNum);
+  }
+
+  @Get('filter/allergens')
+  @ApiOperation({
+    summary: 'Filter products excluding allergens',
+    description: 'Get products that do NOT contain any of the specified allergens (e.g., nuts, dairy)',
+  })
+  @ApiQuery({
+    name: 'exclude',
+    description: 'Comma-separated list of allergens to exclude',
+    example: 'nuts,dairy',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Filtered products retrieved successfully',
+  })
+  async filterByAllergens(
+    @Query('exclude') exclude: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const allergenArray = exclude.split(',').map(a => a.trim());
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.productsService.filterByAllergens(allergenArray, pageNum, limitNum);
+  }
+
+  @Get('popular')
+  @ApiOperation({
+    summary: 'Get popular products',
+    description: 'Retrieve popular products sorted by popularity and sales count',
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Popular products retrieved successfully',
+  })
+  async getPopularProducts(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.productsService.getPopularProducts(pageNum, limitNum);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get product by ID',

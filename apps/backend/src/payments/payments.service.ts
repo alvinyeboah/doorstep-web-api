@@ -265,16 +265,64 @@ export class PaymentsService {
     if (metadata.type === 'order_payment') {
       const orderId = metadata.orderId;
 
-      // Update order as paid
-      await this.prisma.order.update({
+      if (!orderId) {
+        this.logger.error('Order payment missing orderId in metadata');
+        throw new BadRequestException('Order ID is required for order payments');
+      }
+
+      // Validate order exists
+      const order = await this.prisma.order.findUnique({
         where: { id: orderId },
-        data: {
-          // Add a 'paid' field to your Order model if needed
-          updatedAt: new Date(),
+        include: {
+          customer: {
+            include: {
+              user: true,
+            },
+          },
         },
       });
 
-      this.logger.log(`Order payment confirmed: ${orderId} - GHC ${amount}`);
+      if (!order) {
+        this.logger.error(`Order not found: ${orderId}`);
+        throw new BadRequestException(`Order ${orderId} not found`);
+      }
+
+      // Validate order is not already paid
+      if (order.paid) {
+        this.logger.warn(`Order ${orderId} is already marked as paid`);
+        return; // Don't throw error, just return (duplicate webhook)
+      }
+
+      // Validate payment amount matches order total
+      const expectedAmount = order.total + (order.deliveryFee || 0);
+      if (Math.abs(amount - expectedAmount) > 0.01) {
+        this.logger.error(
+          `Payment amount mismatch for order ${orderId}. Expected: ${expectedAmount}, Received: ${amount}`,
+        );
+        throw new BadRequestException(
+          `Payment amount mismatch. Expected GHC ${expectedAmount}, received GHC ${amount}`,
+        );
+      }
+
+      // Validate customer ownership if customerId provided in metadata
+      if (metadata.customerId && order.customerId !== metadata.customerId) {
+        this.logger.error(
+          `Order ${orderId} does not belong to customer ${metadata.customerId}`,
+        );
+        throw new BadRequestException('Order does not belong to this customer');
+      }
+
+      // Update order with payment information
+      await this.prisma.order.update({
+        where: { id: orderId },
+        data: {
+          paid: true,
+          paymentReference: reference,
+          paidAt: new Date(),
+        },
+      });
+
+      this.logger.log(`Order payment confirmed: ${orderId} - GHC ${amount} (Reference: ${reference})`);
     }
   }
 }

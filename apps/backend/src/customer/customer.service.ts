@@ -131,6 +131,9 @@ export class CustomerService {
         items: {
           include: {
             product: {
+              where: {
+                deletedAt: null, // Exclude soft-deleted products
+              },
               include: {
                 vendor: {
                   select: {
@@ -145,15 +148,22 @@ export class CustomerService {
       },
     });
 
-    const total =
-      cart?.items.reduce(
-        (sum: number, item: any) => sum + item.product.price * item.quantity,
-        0,
-      ) || 0;
+    // Filter out items with deleted products and calculate total
+    const validItems = cart?.items.filter(item => item.product !== null) || [];
+    const invalidItemsCount = (cart?.items.length || 0) - validItems.length;
+
+    const total = validItems.reduce(
+      (sum: number, item: any) => sum + item.product.price * item.quantity,
+      0,
+    );
 
     return {
       ...cart,
+      items: validItems,
       total,
+      ...(invalidItemsCount > 0 && {
+        warning: `${invalidItemsCount} item(s) in your cart are no longer available`,
+      }),
     };
   }
 
@@ -171,8 +181,13 @@ export class CustomerService {
       where: { id: dto.productId },
     });
 
-    if (!product || !product.available) {
-      throw new NotFoundException('Product not available');
+    // Check if product exists and is not soft-deleted
+    if (!product || product.deletedAt !== null) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (!product.available) {
+      throw new BadRequestException('Product not available');
     }
 
     let cart = customer.cart;

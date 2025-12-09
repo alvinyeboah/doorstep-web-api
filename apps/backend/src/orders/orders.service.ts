@@ -40,67 +40,113 @@ export class OrdersService {
       throw new NotFoundException('Customer profile not found');
     }
 
-    // Calculate total
-    let total = 0;
-    const orderItems = [];
+    // Use transaction for atomic stock management
+    const order = await this.prisma.$transaction(async (tx) => {
+      // Calculate total and validate stock availability
+      let total = 0;
+      const orderItems = [];
 
-    for (const item of dto.items) {
-      const product = await this.prisma.product.findUnique({
-        where: { id: item.productId },
-      });
+      for (const item of dto.items) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+        });
 
-      if (!product || !product.available) {
-        throw new BadRequestException(
-          `Product ${item.productId} not available`,
-        );
+        // Check product exists, is available, and not soft-deleted
+        if (!product || product.deletedAt !== null) {
+          throw new NotFoundException(
+            `Product ${item.productId} not found`,
+          );
+        }
+
+        if (!product.available) {
+          throw new BadRequestException(
+            `Product "${product.name}" is currently unavailable`,
+          );
+        }
+
+        // Check stock availability if stockQuantity is tracked
+        if (product.stockQuantity !== null && product.stockQuantity < item.quantity) {
+          throw new BadRequestException(
+            `Insufficient stock for "${product.name}". Available: ${product.stockQuantity}, Requested: ${item.quantity}`,
+          );
+        }
+
+        total += product.price * item.quantity;
+        orderItems.push({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: product.price,
+        });
       }
 
-      total += product.price * item.quantity;
-      orderItems.push({
-        productId: item.productId,
-        quantity: item.quantity,
-        price: product.price,
-      });
-    }
-
-    const order = await this.prisma.order.create({
-      data: {
-        customerId: customer.id,
-        vendorId: dto.vendorId,
-        total,
-        deliveryAddress: dto.deliveryAddress,
-        customerNotes: dto.customerNotes,
-        status: 'PLACED',
-        items: {
-          create: orderItems,
-        },
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
+      // Create the order
+      const createdOrder = await tx.order.create({
+        data: {
+          customerId: customer.id,
+          vendorId: dto.vendorId,
+          total,
+          deliveryAddress: dto.deliveryAddress,
+          customerNotes: dto.customerNotes,
+          status: 'PLACED',
+          items: {
+            create: orderItems,
           },
         },
-        vendor: {
-          select: {
-            shopName: true,
-            address: true,
+        include: {
+          items: {
+            include: {
+              product: true,
+            },
+          },
+          vendor: {
+            select: {
+              shopName: true,
+              address: true,
+            },
           },
         },
-      },
-    });
-
-    // Auto-clear cart after successful order creation
-    const cart = await this.prisma.cart.findUnique({
-      where: { customerId: customer.id },
-      include: { items: true },
-    });
-
-    if (cart && cart.items.length > 0) {
-      await this.prisma.cartItem.deleteMany({
-        where: { cartId: cart.id },
       });
-    }
+
+      // Atomically update stock quantities and sold counts
+      for (const item of orderItems) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+        });
+
+        // Only decrement stock if it's being tracked (not null)
+        if (product.stockQuantity !== null) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: { decrement: item.quantity },
+              soldCount: { increment: item.quantity },
+            },
+          });
+        } else {
+          // Just increment sold count if stock isn't tracked
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              soldCount: { increment: item.quantity },
+            },
+          });
+        }
+      }
+
+      // Auto-clear cart after successful order creation
+      const cart = await tx.cart.findUnique({
+        where: { customerId: customer.id },
+        include: { items: true },
+      });
+
+      if (cart && cart.items.length > 0) {
+        await tx.cartItem.deleteMany({
+          where: { cartId: cart.id },
+        });
+      }
+
+      return createdOrder;
+    });
 
     // Auto-assign to nearest stepper if requested
     let suggestedStepper = null;

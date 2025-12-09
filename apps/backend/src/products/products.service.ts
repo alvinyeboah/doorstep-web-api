@@ -312,4 +312,190 @@ export class ProductsService {
       },
     };
   }
+
+  async filterByTags(tags: string[], page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+
+    // Convert tags to lowercase for case-insensitive matching
+    const lowerTags = tags.map(tag => tag.toLowerCase());
+
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where: {
+          available: true,
+          deletedAt: null,
+          vendor: {
+            deletedAt: null,
+            verified: true,
+          },
+          tags: {
+            hasSome: lowerTags, // Match products that have any of the specified tags
+          },
+        },
+        include: {
+          vendor: {
+            select: {
+              id: true,
+              shopName: true,
+              logoUrl: true,
+            },
+          },
+        },
+        orderBy: { soldCount: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.product.count({
+        where: {
+          available: true,
+          deletedAt: null,
+          vendor: {
+            deletedAt: null,
+            verified: true,
+          },
+          tags: {
+            hasSome: lowerTags,
+          },
+        },
+      }),
+    ]);
+
+    return {
+      products,
+      tags: lowerTags,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrevious: page > 1,
+      },
+    };
+  }
+
+  async filterByAllergens(excludeAllergens: string[], page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+
+    // Get all products and filter out those with excluded allergens
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where: {
+          available: true,
+          deletedAt: null,
+          vendor: {
+            deletedAt: null,
+            verified: true,
+          },
+          NOT: {
+            allergens: {
+              hasSome: excludeAllergens, // Exclude products with any of these allergens
+            },
+          },
+        },
+        include: {
+          vendor: {
+            select: {
+              id: true,
+              shopName: true,
+              logoUrl: true,
+            },
+          },
+        },
+        orderBy: { name: 'asc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.product.count({
+        where: {
+          available: true,
+          deletedAt: null,
+          vendor: {
+            deletedAt: null,
+            verified: true,
+          },
+          NOT: {
+            allergens: {
+              hasSome: excludeAllergens,
+            },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      products,
+      excludedAllergens: excludeAllergens,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrevious: page > 1,
+      },
+    };
+  }
+
+  async getPopularProducts(page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where: {
+          available: true,
+          deletedAt: null,
+          vendor: {
+            deletedAt: null,
+            verified: true,
+          },
+          OR: [
+            { isPopular: true },
+            { soldCount: { gt: 0 } },
+          ],
+        },
+        include: {
+          vendor: {
+            select: {
+              id: true,
+              shopName: true,
+              logoUrl: true,
+            },
+          },
+        },
+        orderBy: [
+          { isPopular: 'desc' },
+          { soldCount: 'desc' },
+        ],
+        skip,
+        take: limit,
+      }),
+      this.prisma.product.count({
+        where: {
+          available: true,
+          deletedAt: null,
+          vendor: {
+            deletedAt: null,
+            verified: true,
+          },
+          OR: [
+            { isPopular: true },
+            { soldCount: { gt: 0 } },
+          ],
+        },
+      }),
+    ]);
+
+    return {
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrevious: page > 1,
+      },
+    };
+  }
 }
