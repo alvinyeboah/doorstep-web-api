@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import {
   InitializePaymentDto,
   VerifyPaymentDto,
@@ -263,7 +264,7 @@ export class PaymentsService {
       }
 
       // Use transaction for atomic deposit crediting
-      await this.prisma.$transaction(async (tx) => {
+      await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         await tx.wallet.update({
           where: { stepperId },
           data: {

@@ -149,7 +149,7 @@ export class CustomerService {
     });
 
     // Filter out items with deleted products and calculate total
-    const validItems = cart?.items.filter(item => item.product !== null) || [];
+    const validItems = cart?.items.filter((item: any) => item.product !== null) || [];
     const invalidItemsCount = (cart?.items.length || 0) - validItems.length;
 
     const total = validItems.reduce(

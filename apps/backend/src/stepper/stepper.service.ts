@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import {
   RegisterStepperDto,
   UpdateStepperDto,
@@ -264,7 +265,7 @@ export class StepperService {
     }
 
     // Use transaction to atomically check balance and create request
-    const request = await this.prisma.$transaction(async (tx) => {
+    const request = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Get current wallet state
       const wallet = await tx.wallet.findUnique({
         where: { id: stepper.wallet.id },

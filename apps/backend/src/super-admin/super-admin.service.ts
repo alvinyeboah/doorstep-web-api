@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SuperAdminService {
@@ -323,7 +324,7 @@ export class SuperAdminService {
     }
 
     // Use transaction to atomically approve and deduct balance
-    const updated = await this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Verify wallet still has sufficient balance
       const wallet = await tx.wallet.findUnique({
         where: { stepperId: withdrawal.stepperId },
