@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import {
   CreateOrderDto,
   UpdateOrderStatusDto,
@@ -50,7 +51,7 @@ export class OrdersService {
     }
 
     // Use transaction for atomic stock management
-    const order = await this.prisma.$transaction(async (tx) => {
+    const order = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Calculate total and validate stock availability
       let total = 0;
       const orderItems = [];
@@ -473,7 +474,7 @@ export class OrdersService {
 
       if (!existingCommission) {
         // Use transaction for atomic commission crediting
-        await this.prisma.$transaction(async (tx) => {
+        await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
           // Create commission record
           await tx.commissionHistory.create({
             data: {
@@ -801,7 +802,7 @@ export class OrdersService {
     }
 
     // Use transaction to atomically cancel order and restore stock
-    const updated = await this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Cancel the order
       const cancelledOrder = await tx.order.update({
         where: { id: orderId },

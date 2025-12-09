@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+import { createPaginatedResponse } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class ProductsService {
@@ -269,7 +270,7 @@ export class ProductsService {
     ]);
 
     // Filter out products with deleted vendors
-    const validProducts = products.filter(p => p.vendor);
+    const validProducts = products.filter((p: any) => p.vendor);
 
     return createPaginatedResponse(validProducts, total, page, limit);
   }
