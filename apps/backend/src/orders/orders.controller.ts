@@ -64,7 +64,7 @@ export class OrdersController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get order by ID',
-    description: 'Retrieve detailed information about a specific order',
+    description: 'Retrieve detailed information about a specific order (must be related to the order)',
   })
   @ApiParam({
     name: 'id',
@@ -80,11 +80,15 @@ export class OrdersController {
     description: 'Unauthorized - authentication required',
   })
   @ApiResponse({
+    status: 403,
+    description: 'Forbidden - you can only view orders you are involved with',
+  })
+  @ApiResponse({
     status: 404,
     description: 'Order not found',
   })
-  async getOrder(@Param('id') id: string) {
-    return this.ordersService.getOrder(id);
+  async getOrder(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.ordersService.getOrder(id, user.id, user.role);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
@@ -121,10 +125,11 @@ export class OrdersController {
     description: 'Order not found',
   })
   async updateOrderStatus(
+    @CurrentUser() user: any,
     @Param('id') id: string,
     @Body() dto: UpdateOrderStatusDto,
   ) {
-    return this.ordersService.updateOrderStatus(id, dto);
+    return this.ordersService.updateOrderStatus(id, user.id, user.role, dto);
   }
 
   @UseGuards(AuthGuard, RolesGuard)

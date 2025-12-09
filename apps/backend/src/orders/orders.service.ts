@@ -33,74 +33,129 @@ export class OrdersService {
 
   async createOrder(userId: string, dto: CreateOrderDto) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!customer) {
       throw new NotFoundException('Customer profile not found');
     }
 
-    // Calculate total
-    let total = 0;
-    const orderItems = [];
+    // Validate vendor exists and is not deleted
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { id: dto.vendorId },
+    });
 
-    for (const item of dto.items) {
-      const product = await this.prisma.product.findUnique({
-        where: { id: item.productId },
-      });
+    if (!vendor || vendor.deletedAt !== null) {
+      throw new NotFoundException('Vendor not found');
+    }
 
-      if (!product || !product.available) {
-        throw new BadRequestException(
-          `Product ${item.productId} not available`,
-        );
+    // Use transaction for atomic stock management
+    const order = await this.prisma.$transaction(async (tx) => {
+      // Calculate total and validate stock availability
+      let total = 0;
+      const orderItems = [];
+
+      for (const item of dto.items) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+        });
+
+        // Check product exists, is available, and not soft-deleted
+        if (!product || product.deletedAt !== null) {
+          throw new NotFoundException(
+            `Product ${item.productId} not found`,
+          );
+        }
+
+        if (!product.available) {
+          throw new BadRequestException(
+            `Product "${product.name}" is currently unavailable`,
+          );
+        }
+
+        // Check stock availability if stockQuantity is tracked
+        if (product.stockQuantity !== null && product.stockQuantity < item.quantity) {
+          throw new BadRequestException(
+            `Insufficient stock for "${product.name}". Available: ${product.stockQuantity}, Requested: ${item.quantity}`,
+          );
+        }
+
+        total += product.price * item.quantity;
+        orderItems.push({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: product.price,
+        });
       }
 
-      total += product.price * item.quantity;
-      orderItems.push({
-        productId: item.productId,
-        quantity: item.quantity,
-        price: product.price,
-      });
-    }
-
-    const order = await this.prisma.order.create({
-      data: {
-        customerId: customer.id,
-        vendorId: dto.vendorId,
-        total,
-        deliveryAddress: dto.deliveryAddress,
-        customerNotes: dto.customerNotes,
-        status: 'PLACED',
-        items: {
-          create: orderItems,
-        },
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
+      // Create the order
+      const createdOrder = await tx.order.create({
+        data: {
+          customerId: customer.id,
+          vendorId: dto.vendorId,
+          total,
+          deliveryAddress: dto.deliveryAddress,
+          customerNotes: dto.customerNotes,
+          status: 'PLACED',
+          items: {
+            create: orderItems,
           },
         },
-        vendor: {
-          select: {
-            shopName: true,
-            address: true,
+        include: {
+          items: {
+            include: {
+              product: true,
+            },
+          },
+          vendor: {
+            select: {
+              shopName: true,
+              address: true,
+            },
           },
         },
-      },
-    });
-
-    // Auto-clear cart after successful order creation
-    const cart = await this.prisma.cart.findUnique({
-      where: { customerId: customer.id },
-      include: { items: true },
-    });
-
-    if (cart && cart.items.length > 0) {
-      await this.prisma.cartItem.deleteMany({
-        where: { cartId: cart.id },
       });
-    }
+
+      // Atomically update stock quantities and sold counts
+      for (const item of orderItems) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+        });
+
+        // Only decrement stock if it's being tracked (not null)
+        if (product.stockQuantity !== null) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: { decrement: item.quantity },
+              soldCount: { increment: item.quantity },
+            },
+          });
+        } else {
+          // Just increment sold count if stock isn't tracked
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              soldCount: { increment: item.quantity },
+            },
+          });
+        }
+      }
+
+      // Auto-clear cart after successful order creation
+      const cart = await tx.cart.findUnique({
+        where: { customerId: customer.id },
+        include: { items: true },
+      });
+
+      if (cart && cart.items.length > 0) {
+        await tx.cartItem.deleteMany({
+          where: { cartId: cart.id },
+        });
+      }
+
+      return createdOrder;
+    });
 
     // Auto-assign to nearest stepper if requested
     let suggestedStepper = null;
@@ -205,7 +260,7 @@ export class OrdersService {
     };
   }
 
-  async getOrder(orderId: string) {
+  async getOrder(orderId: string, userId: string, userRole: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: {
@@ -224,6 +279,7 @@ export class OrdersService {
             id: true,
             shopName: true,
             address: true,
+            userId: true,
           },
         },
         stepper: {
@@ -249,16 +305,139 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
 
+    // Authorization: Verify user has permission to view this order
+    let hasAccess = false;
+
+    if (userRole === 'SUPER_ADMIN') {
+      hasAccess = true;
+    } else if (userRole === 'CUSTOMER') {
+      const customer = await this.prisma.customer.findUnique({
+        where: { userId, deletedAt: null },
+      });
+      hasAccess = customer && order.customerId === customer.id;
+    } else if (userRole === 'VENDOR') {
+      const vendor = await this.prisma.vendor.findUnique({
+        where: { userId, deletedAt: null },
+      });
+      hasAccess = vendor && order.vendorId === vendor.id;
+    } else if (userRole === 'STEPPER') {
+      const stepper = await this.prisma.stepper.findUnique({
+        where: { userId, deletedAt: null },
+      });
+      hasAccess = stepper && order.stepperId === stepper.id;
+    }
+
+    if (!hasAccess) {
+      throw new ForbiddenException(
+        'You do not have permission to view this order',
+      );
+    }
+
     return order;
   }
 
-  async updateOrderStatus(orderId: string, dto: UpdateOrderStatusDto) {
+  async updateOrderStatus(
+    orderId: string,
+    userId: string,
+    userRole: string,
+    dto: UpdateOrderStatusDto,
+  ) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
+      include: {
+        vendor: true,
+        stepper: true,
+      },
     });
 
     if (!order) {
       throw new NotFoundException('Order not found');
+    }
+
+    // Authorization: Verify user has permission to update this order
+    if (userRole === 'VENDOR') {
+      const vendor = await this.prisma.vendor.findUnique({
+        where: { userId, deletedAt: null },
+      });
+
+      if (!vendor) {
+        throw new ForbiddenException('Vendor profile not found');
+      }
+
+      if (order.vendorId !== vendor.id) {
+        throw new ForbiddenException(
+          'You can only update orders for your own restaurant',
+        );
+      }
+
+      // Vendors can only update to certain statuses
+      const allowedVendorStatuses = [
+        'ACCEPTED',
+        'PREPARING',
+        'READY',
+        'CANCELLED',
+      ];
+      if (!allowedVendorStatuses.includes(dto.status)) {
+        throw new BadRequestException(
+          `Vendors can only update order status to: ${allowedVendorStatuses.join(', ')}`,
+        );
+      }
+    } else if (userRole === 'STEPPER') {
+      const stepper = await this.prisma.stepper.findUnique({
+        where: { userId, deletedAt: null },
+      });
+
+      if (!stepper) {
+        throw new ForbiddenException('Stepper profile not found');
+      }
+
+      if (order.stepperId !== stepper.id) {
+        throw new ForbiddenException(
+          'You can only update orders assigned to you',
+        );
+      }
+
+      // Steppers can only update to certain statuses
+      const allowedStepperStatuses = [
+        'OUT_FOR_DELIVERY',
+        'DELIVERED',
+        'COMPLETED',
+      ];
+      if (!allowedStepperStatuses.includes(dto.status)) {
+        throw new BadRequestException(
+          `Steppers can only update order status to: ${allowedStepperStatuses.join(', ')}`,
+        );
+      }
+    } else {
+      throw new ForbiddenException(
+        'Only vendors and steppers can update order status',
+      );
+    }
+
+    // State machine validation: Prevent invalid status transitions
+    const validTransitions: Record<string, string[]> = {
+      PLACED: ['ACCEPTED', 'CANCELLED'],
+      ACCEPTED: ['PREPARING', 'CANCELLED'],
+      PREPARING: ['READY', 'CANCELLED'],
+      READY: ['OUT_FOR_DELIVERY', 'CANCELLED'],
+      OUT_FOR_DELIVERY: ['DELIVERED', 'CANCELLED'],
+      DELIVERED: ['COMPLETED'],
+      CANCELLED: [], // Terminal state
+      COMPLETED: [], // Terminal state
+    };
+
+    const currentStatus = order.status;
+    const newStatus = dto.status;
+
+    if (!validTransitions[currentStatus]) {
+      throw new BadRequestException(`Invalid current order status: ${currentStatus}`);
+    }
+
+    if (!validTransitions[currentStatus].includes(newStatus)) {
+      throw new BadRequestException(
+        `Invalid status transition from ${currentStatus} to ${newStatus}. ` +
+        `Valid transitions: ${validTransitions[currentStatus].join(', ') || 'none (terminal state)'}`,
+      );
     }
 
     const updated = await this.prisma.order.update({
@@ -293,22 +472,25 @@ export class OrdersService {
       );
 
       if (!existingCommission) {
-        // Create commission record
-        await this.prisma.commissionHistory.create({
-          data: {
-            stepperId: updated.stepperId,
-            orderId: updated.id,
-            amount: commission,
-          },
-        });
+        // Use transaction for atomic commission crediting
+        await this.prisma.$transaction(async (tx) => {
+          // Create commission record
+          await tx.commissionHistory.create({
+            data: {
+              stepperId: updated.stepperId,
+              orderId: updated.id,
+              amount: commission,
+            },
+          });
 
-        // Update stepper wallet
-        await this.prisma.wallet.update({
-          where: { stepperId: updated.stepperId },
-          data: {
-            balance: { increment: commission },
-            totalEarned: { increment: commission },
-          },
+          // Update stepper wallet atomically
+          await tx.wallet.update({
+            where: { stepperId: updated.stepperId },
+            data: {
+              balance: { increment: commission },
+              totalEarned: { increment: commission },
+            },
+          });
         });
       }
     }
@@ -376,7 +558,11 @@ export class OrdersService {
       where: { id: stepperId },
     });
 
-    if (!stepper || !stepper.available) {
+    if (!stepper || stepper.deletedAt !== null) {
+      throw new NotFoundException('Stepper not found');
+    }
+
+    if (!stepper.available) {
       throw new BadRequestException('Stepper not available');
     }
 
@@ -530,7 +716,7 @@ export class OrdersService {
 
   async rateOrder(userId: string, orderId: string, dto: RateOrderDto) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!customer) {
@@ -589,7 +775,7 @@ export class OrdersService {
 
   async cancelOrder(userId: string, orderId: string) {
     const customer = await this.prisma.customer.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!customer) {
@@ -601,6 +787,9 @@ export class OrdersService {
         id: orderId,
         customerId: customer.id,
       },
+      include: {
+        items: true,
+      },
     });
 
     if (!order) {
@@ -611,14 +800,38 @@ export class OrdersService {
       throw new BadRequestException('Order cannot be cancelled at this stage');
     }
 
-    const updated = await this.prisma.order.update({
-      where: { id: orderId },
-      data: { status: 'CANCELLED' },
+    // Use transaction to atomically cancel order and restore stock
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // Cancel the order
+      const cancelledOrder = await tx.order.update({
+        where: { id: orderId },
+        data: { status: 'CANCELLED' },
+      });
+
+      // Restore stock for each product in the order
+      for (const item of order.items) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+        });
+
+        // Only restore stock if product still exists and tracks stock
+        if (product && product.stockQuantity !== null) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: { increment: item.quantity },
+              soldCount: { decrement: item.quantity },
+            },
+          });
+        }
+      }
+
+      return cancelledOrder;
     });
 
     return {
       order: updated,
-      message: 'Order cancelled successfully',
+      message: 'Order cancelled successfully and stock restored',
     };
   }
 

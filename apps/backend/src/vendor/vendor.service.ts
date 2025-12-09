@@ -94,7 +94,7 @@ export class VendorService {
 
   async getProfile(vendorId: string) {
     const vendor = await this.prisma.vendor.findUnique({
-      where: { id: vendorId },
+      where: { id: vendorId, deletedAt: null },
       include: {
         user: {
           select: {
@@ -104,10 +104,14 @@ export class VendorService {
             phone: true,
           },
         },
-        products: true,
+        products: {
+          where: { deletedAt: null }, // Exclude soft-deleted products
+        },
         _count: {
           select: {
-            products: true,
+            products: {
+              where: { deletedAt: null },
+            },
             orders: true,
           },
         },
@@ -123,7 +127,7 @@ export class VendorService {
 
   async getMyProfile(userId: string) {
     const vendor = await this.prisma.vendor.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
       include: {
         user: {
           select: {
@@ -133,10 +137,14 @@ export class VendorService {
             phone: true,
           },
         },
-        products: true,
+        products: {
+          where: { deletedAt: null }, // Exclude soft-deleted products
+        },
         _count: {
           select: {
-            products: true,
+            products: {
+              where: { deletedAt: null },
+            },
             orders: true,
           },
         },
@@ -151,14 +159,16 @@ export class VendorService {
   }
 
   async getAllVendors(search?: string, page = 1, limit = 20) {
-    const where = search
-      ? {
-          OR: [
-            { shopName: { contains: search, mode: 'insensitive' as any } },
-            { businessType: { contains: search, mode: 'insensitive' as any } },
-          ],
-        }
-      : {};
+    const where: any = {
+      deletedAt: null, // Exclude soft-deleted vendors
+    };
+
+    if (search) {
+      where.OR = [
+        { shopName: { contains: search, mode: 'insensitive' as any } },
+        { businessType: { contains: search, mode: 'insensitive' as any } },
+      ];
+    }
 
     const [vendors, total] = await Promise.all([
       this.prisma.vendor.findMany({
@@ -171,7 +181,9 @@ export class VendorService {
           },
           _count: {
             select: {
-              products: true,
+              products: {
+                where: { deletedAt: null }, // Count only non-deleted products
+              },
             },
           },
         },
@@ -245,7 +257,7 @@ export class VendorService {
 
   async getAnalytics(userId: string) {
     const vendor = await this.prisma.vendor.findUnique({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
 
     if (!vendor) {
@@ -266,7 +278,7 @@ export class VendorService {
     });
 
     const totalProducts = await this.prisma.product.count({
-      where: { vendorId: vendor.id },
+      where: { vendorId: vendor.id, deletedAt: null }, // Count only non-deleted products
     });
 
     const averageRating = await this.prisma.rating.aggregate({

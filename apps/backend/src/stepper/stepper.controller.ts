@@ -284,7 +284,19 @@ export class StepperController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get withdrawal requests',
-    description: 'Stepper retrieves their withdrawal request history',
+    description: 'Stepper retrieves their withdrawal request history with pagination',
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
   })
   @ApiResponse({
     status: 200,
@@ -298,8 +310,16 @@ export class StepperController {
     status: 403,
     description: 'Forbidden - stepper role required',
   })
-  async getWithdrawalRequests(@CurrentUser() user: any) {
-    return this.stepperService.getWithdrawalRequests(user.id);
+  async getWithdrawalRequests(
+    @CurrentUser() user: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.stepperService.getWithdrawalRequests(
+      user.id,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
   }
 
   @UseGuards(AuthGuard, RolesGuard)
@@ -308,7 +328,19 @@ export class StepperController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get commission history',
-    description: 'Stepper retrieves their delivery commission earnings history',
+    description: 'Stepper retrieves their delivery commission earnings history with pagination',
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
   })
   @ApiResponse({
     status: 200,
@@ -322,15 +354,24 @@ export class StepperController {
     status: 403,
     description: 'Forbidden - stepper role required',
   })
-  async getCommissionHistory(@CurrentUser() user: any) {
-    return this.stepperService.getCommissionHistory(user.id);
+  async getCommissionHistory(
+    @CurrentUser() user: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.stepperService.getCommissionHistory(
+      user.id,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
   }
 
+  @UseGuards(AuthGuard)
   @Get('nearby')
   @ApiOperation({
     summary: 'Get nearby available steppers',
     description:
-      'Find available and verified steppers near a location for delivery. Public endpoint - no authentication required.',
+      'Find available and verified steppers near a location for delivery. Requires authentication to protect stepper privacy.',
   })
   @ApiQuery({
     name: 'latitude',
@@ -353,6 +394,10 @@ export class StepperController {
   @ApiResponse({
     status: 200,
     description: 'Nearby steppers retrieved successfully, sorted by distance',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
   })
   @ApiResponse({
     status: 400,

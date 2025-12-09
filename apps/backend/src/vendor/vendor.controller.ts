@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Put,
+  Delete,
   Get,
   Body,
   Param,
@@ -23,11 +24,16 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { ProductsService } from '../products/products.service';
+import { CreateProductDto, UpdateProductDto } from '../products/dto/product.dto';
 
 @ApiTags('vendors')
 @Controller('vendor')
 export class VendorController {
-  constructor(private readonly vendorService: VendorService) {}
+  constructor(
+    private readonly vendorService: VendorService,
+    private readonly productsService: ProductsService,
+  ) {}
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('VENDOR')
@@ -254,5 +260,153 @@ export class VendorController {
   })
   async getAnalytics(@CurrentUser() user: any) {
     return this.vendorService.getAnalytics(user.id);
+  }
+
+  // Product Management Endpoints (moved from /products)
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('VENDOR')
+  @Post('products')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Create a new product',
+    description: 'Vendor creates a new product for their shop',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Product created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - invalid data',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - vendor role required',
+  })
+  async createProduct(@CurrentUser() user: any, @Body() dto: CreateProductDto) {
+    return this.productsService.create(user.id, dto);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('VENDOR')
+  @Get('products')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get my products',
+    description: 'Vendor retrieves all their own products with pagination',
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Products retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - vendor role required',
+  })
+  async getMyProducts(
+    @CurrentUser() user: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.productsService.getMyProducts(
+      user.id,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('VENDOR')
+  @Put('products/:id')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update a product',
+    description: 'Vendor updates their own product',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Product ID',
+    example: 'clp123abc456def',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Product updated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - invalid data',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - can only update own products',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+  })
+  async updateProduct(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() dto: UpdateProductDto,
+  ) {
+    return this.productsService.update(user.id, id, dto);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('VENDOR')
+  @Delete('products/:id')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Delete a product',
+    description: 'Vendor deletes their own product',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Product ID',
+    example: 'clp123abc456def',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Product deleted successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - can only delete own products',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+  })
+  async deleteProduct(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.productsService.delete(user.id, id);
   }
 }

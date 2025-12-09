@@ -30,6 +30,7 @@
   "packageManager": "pnpm@9.15.4",
   "dependencies": {
     "@nestjs/platform-socket.io": "^11.1.9",
+    "@nestjs/throttler": "^6.5.0",
     "@nestjs/websockets": "^11.1.9",
     "socket.io": "^4.8.1"
   }

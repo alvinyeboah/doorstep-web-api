@@ -29,131 +29,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles('VENDOR')
-  @Post()
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Create a new product',
-    description: 'Vendor creates a new product for their shop',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Product created successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad request - invalid data',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - authentication required',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - vendor role required',
-  })
-  async create(@CurrentUser() user: any, @Body() dto: CreateProductDto) {
-    return this.productsService.create(user.id, dto);
-  }
-
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles('VENDOR')
-  @Put(':id')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Update a product',
-    description: 'Vendor updates their own product',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'Product ID',
-    example: 'clp123abc456def',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Product updated successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad request - invalid data',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - authentication required',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - can only update own products',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Product not found',
-  })
-  async update(
-    @CurrentUser() user: any,
-    @Param('id') id: string,
-    @Body() dto: UpdateProductDto,
-  ) {
-    return this.productsService.update(user.id, id, dto);
-  }
-
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles('VENDOR')
-  @Delete(':id')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Delete a product',
-    description: 'Vendor deletes their own product',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'Product ID',
-    example: 'clp123abc456def',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Product deleted successfully',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - authentication required',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - can only delete own products',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Product not found',
-  })
-  async delete(@CurrentUser() user: any, @Param('id') id: string) {
-    return this.productsService.delete(user.id, id);
-  }
-
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles('VENDOR')
-  @Get('my-products')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Get my products',
-    description: 'Vendor retrieves all their own products',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Products retrieved successfully',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - authentication required',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - vendor role required',
-  })
-  async getMyProducts(@CurrentUser() user: any) {
-    return this.productsService.getMyProducts(user.id);
-  }
+  // NOTE: Vendor product management (CREATE, UPDATE, DELETE, MY-PRODUCTS) moved to /vendor/products
+  // This controller now only handles PUBLIC product browsing endpoints
 
   @Get('vendor/:vendorId')
   @ApiOperation({
@@ -180,7 +57,7 @@ export class ProductsController {
   @Get('search')
   @ApiOperation({
     summary: 'Search products',
-    description: 'Search for products by name, description, or category',
+    description: 'Search for products by name, description, or category with pagination',
   })
   @ApiQuery({
     name: 'q',
@@ -188,12 +65,32 @@ export class ProductsController {
     example: 'jollof rice',
     required: false,
   })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
   @ApiResponse({
     status: 200,
     description: 'Search results retrieved successfully',
   })
-  async searchProducts(@Query('q') search: string) {
-    return this.productsService.searchProducts(search);
+  async searchProducts(
+    @Query('q') search: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.productsService.searchProducts(
+      search,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
   }
 
   @Get('all')
@@ -224,6 +121,112 @@ export class ProductsController {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 20;
     return this.productsService.getAllProducts(pageNum, limitNum);
+  }
+
+  @Get('filter/tags')
+  @ApiOperation({
+    summary: 'Filter products by tags',
+    description: 'Get products that have any of the specified tags (e.g., halal, vegan, spicy)',
+  })
+  @ApiQuery({
+    name: 'tags',
+    description: 'Comma-separated list of tags',
+    example: 'halal,spicy',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Filtered products retrieved successfully',
+  })
+  async filterByTags(
+    @Query('tags') tags: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const tagArray = tags.split(',').map(t => t.trim());
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.productsService.filterByTags(tagArray, pageNum, limitNum);
+  }
+
+  @Get('filter/allergens')
+  @ApiOperation({
+    summary: 'Filter products excluding allergens',
+    description: 'Get products that do NOT contain any of the specified allergens (e.g., nuts, dairy)',
+  })
+  @ApiQuery({
+    name: 'exclude',
+    description: 'Comma-separated list of allergens to exclude',
+    example: 'nuts,dairy',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Filtered products retrieved successfully',
+  })
+  async filterByAllergens(
+    @Query('exclude') exclude: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const allergenArray = exclude.split(',').map(a => a.trim());
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.productsService.filterByAllergens(allergenArray, pageNum, limitNum);
+  }
+
+  @Get('popular')
+  @ApiOperation({
+    summary: 'Get popular products',
+    description: 'Retrieve popular products sorted by popularity and sales count',
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Number of items per page',
+    example: 20,
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Popular products retrieved successfully',
+  })
+  async getPopularProducts(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.productsService.getPopularProducts(pageNum, limitNum);
   }
 
   @Get(':id')

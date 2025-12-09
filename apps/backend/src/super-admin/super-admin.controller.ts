@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Put,
+  Post,
   Param,
   Query,
   Body,
@@ -62,5 +63,29 @@ export class SuperAdminController {
   @Get('users')
   async getAllUsers(@Query('role') role?: string) {
     return this.superAdminService.getAllUsers(role);
+  }
+
+  // Withdrawal Management
+  @Get('withdrawals/pending')
+  async getPendingWithdrawals() {
+    return this.superAdminService.getPendingWithdrawals();
+  }
+
+  @Get('withdrawals')
+  async getAllWithdrawals(@Query('status') status?: string) {
+    return this.superAdminService.getAllWithdrawals(status);
+  }
+
+  @Post('withdrawals/:id/approve')
+  async approveWithdrawal(@Param('id') id: string) {
+    return this.superAdminService.approveWithdrawal(id);
+  }
+
+  @Post('withdrawals/:id/reject')
+  async rejectWithdrawal(
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.superAdminService.rejectWithdrawal(id, body.reason);
   }
 }

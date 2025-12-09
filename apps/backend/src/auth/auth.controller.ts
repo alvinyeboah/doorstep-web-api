@@ -16,6 +16,7 @@ import {
   ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from './guards/auth.guard';
 import { Public } from './decorators/public.decorator';
 import { AuthService } from './services/auth.service';
@@ -29,6 +30,7 @@ export class AuthController {
 
   @Post('signup')
   @Public()
+  @Throttle({ strict: { ttl: 60000, limit: 10 } })
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create a new user account',
@@ -90,6 +92,7 @@ export class AuthController {
 
   @Post('signin')
   @Public()
+  @Throttle({ strict: { ttl: 60000, limit: 10 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Sign in to an existing account',
@@ -145,6 +148,7 @@ export class AuthController {
 
   @Post('google-signin')
   @Public()
+  @Throttle({ strict: { ttl: 60000, limit: 10 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Handle Google OAuth sign-in completion',
